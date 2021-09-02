@@ -60,7 +60,6 @@ class CICDPipeline(cdk.Stack):
                 synth_command="npx cdk synth",
                 test_commands=[
                     "python -m flake8 .",
-                    "python -m pytest test",
                     "python -m black --check .",
                 ],
                 environment=codebuild.BuildEnvironment(privileged=True),
