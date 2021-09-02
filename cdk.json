@@ -1,0 +1,44 @@
+{
+  "app": "python3 app.py",
+  "context": {
+    "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true,
+    "@aws-cdk/core:enableStackNameDuplicates": "true",
+    "aws-cdk:enableDiffNoFail": "true",
+    "@aws-cdk/core:stackRelativeExports": "true",
+    "@aws-cdk/aws-ecr-assets:dockerIgnoreSupport": true,
+    "@aws-cdk/aws-secretsmanager:parseOwnedSecretName": true,
+    "@aws-cdk/aws-kms:defaultKeyPolicies": true,
+    "@aws-cdk/aws-s3:grantWriteWithoutAcl": true,
+    "@aws-cdk/aws-ecs-patterns:removeDefaultDesiredCount": true,
+    "@aws-cdk/aws-rds:lowercaseDbIdentifier": true,
+    "@aws-cdk/aws-efs:defaultEncryptionAtRest": true,
+    "@aws-cdk/aws-lambda:recognizeVersionProps": true,
+    "@aws-cdk/core:newStyleStackSynthesis": true,
+    "config": {
+      "general": {
+        "repository_name": "devsecops-quickstart",
+        "development_branch": "development",
+        "production_branch": "master",
+        "toolchain_account": "911685872277",
+        "toolchain_region": "eu-west-1"
+      },
+      "stage": {
+        "dev": {
+          "manual_approvals": false,
+          "stage_account": "501312947573",
+          "stage_region": "eu-west-1"
+        },
+        "qa": {
+          "manual_approvals": false,
+          "stage_account": "084488000824",
+          "stage_region": "eu-west-1"
+        },
+        "prod": {
+          "manual_approvals": true,
+          "stage_account": "840020473442",
+          "stage_region": "eu-west-1"
+        }
+      }
+    }
+  }
+}
