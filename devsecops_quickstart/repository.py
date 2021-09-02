@@ -10,4 +10,8 @@ class Repository(cdk.Stack):
             self, "Repository", repository_name=general_config["repository_name"]
         )
 
-        cdk.CfnOutput(self, "Repository_Clone_URL", value=self.repository.repository_clone_url_http)
+        cdk.CfnOutput(
+            self,
+            "Repository_Clone_URL",
+            value=self.repository.repository_clone_url_http,
+        )
