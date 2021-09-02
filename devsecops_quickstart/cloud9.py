@@ -14,10 +14,10 @@ class Cloud9Stack(cdk.Stack):
             repository_name=general_config["repository_name"],
         )
 
-        vpc = ec2.Vpc(self, f"Cloud9-VPC", max_azs=3)
+        vpc = ec2.Vpc(self, "Cloud9-VPC", max_azs=3)
         c9env = cloud9.Ec2Environment(
             self,
-            f"Cloud9-Env",
+            "Cloud9-Env",
             vpc=vpc,
             subnet_selection=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
             cloned_repositories=[

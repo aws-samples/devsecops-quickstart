@@ -91,15 +91,15 @@ $ git remote add origin https://git-codecommit.eu-west-1.amazonaws.com/v1/repos/
 $ git checkout -b development
 $ git add .
 $ git commit -m "initial commit"
+$ git push --set-upstream origin development
 ```
 
 Run the following command to deploy the development CI/CD pipeline. The development pipeline will track changes from
 `development_branch` as configured in `cdk.json`. 
 
 ```
-$ cdk deploy devsecops-quickstart-development --profile toolchain-profile
+$ cdk deploy devsecops-quickstart-cicd-development --profile toolchain-profile
 ```
-
 
 
 
