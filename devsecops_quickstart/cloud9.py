@@ -19,7 +19,7 @@ class Cloud9Stack(cdk.Stack):
             self,
             "Cloud9-Env",
             vpc=vpc,
-            subnet_selection=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
+            subnet_selection=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             cloned_repositories=[
                 cloud9.CloneRepository.from_code_commit(repository, "/"),
             ],
