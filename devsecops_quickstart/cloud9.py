@@ -25,27 +25,27 @@ class Cloud9Stack(cdk.Stack):
             self,
             id="cloud9_admin_password",
             secret_name="cloud9_admin_password",
-            description="cloud9 admin password"
+            description="cloud9 admin password",
         )
 
         cloud9_admin_user = iam.User(
             self,
             id="cloud9_admin",
             user_name="cloud9_admin",
-            password=secret.secret_value
+            password=secret.secret_value,
         )
         cloud9_admin_user.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
                 self,
-                id='AWSCloud9Administrator',
-                managed_policy_arn='arn:aws:iam::aws:policy/AWSCloud9Administrator'
+                id="AWSCloud9Administrator",
+                managed_policy_arn="arn:aws:iam::aws:policy/AWSCloud9Administrator",
             )
         )
         cloud9_admin_user.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
                 self,
-                id='AWSCodeCommitFullAccess',
-                managed_policy_arn='arn:aws:iam::aws:policy/AWSCodeCommitFullAccess'
+                id="AWSCodeCommitFullAccess",
+                managed_policy_arn="arn:aws:iam::aws:policy/AWSCodeCommitFullAccess",
             )
         )
         cdk.CfnOutput(self, "Cloud9_Admin_User", value=cloud9_admin_user.user_arn)
@@ -59,10 +59,12 @@ class Cloud9Stack(cdk.Stack):
             instance_type="t2.micro",
             owner_arn=cloud9_admin_user.user_arn,
             subnet_id=vpc.public_subnets[0].subnet_id,
-            repositories=[cloud9.CfnEnvironmentEC2.RepositoryProperty(
-                repository_url=repository.repository_clone_url_http,
-                path_component=f"/{general_config['repository_name']}"
-            )]
+            repositories=[
+                cloud9.CfnEnvironmentEC2.RepositoryProperty(
+                    repository_url=repository.repository_clone_url_http,
+                    path_component=f"/{general_config['repository_name']}",
+                )
+            ],
         )
 
         ide_url = f"https://{general_config['toolchain_region']}.console.aws.amazon.com/cloud9/ide/{cloud9_environment.ref}"

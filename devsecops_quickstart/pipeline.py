@@ -8,6 +8,7 @@ import aws_cdk.aws_codecommit as codecommit
 import logging
 
 from devsecops_quickstart.cloud9 import Cloud9Stage
+from devsecops_quickstart.sample_app import SampleAppStage
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -79,8 +80,19 @@ class CICDPipeline(cdk.Stack):
                 ),
             )
 
-        # for stage_config_item in config_stages.items():
-        #     stage = stage_config_item[0]
-        #     stage_config = stage_config_item[1]
-        #
-        #     pass
+        for stage_config_item in stages_config.items():
+            stage = stage_config_item[0]
+            stage_config = stage_config_item[1]
+
+            pipeline.add_application_stage(
+                app_stage=SampleAppStage(
+                    self,
+                    stage=stage,
+                    general_config=general_config,
+                    stage_config=stage_config,
+                    env=cdk.Environment(
+                        account=stage_config["stage_account"],
+                        region=stage_config["stage_region"],
+                    ),
+                )
+            )
