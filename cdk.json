@@ -30,12 +30,12 @@
         },
         "qa": {
           "manual_approvals": false,
-          "stage_account": "084488000824",
+          "stage_account": "808243397334",
           "stage_region": "eu-west-1"
         },
         "prod": {
           "manual_approvals": true,
-          "stage_account": "840020473442",
+          "stage_account": "773641490878",
           "stage_region": "eu-west-1"
         }
       }
