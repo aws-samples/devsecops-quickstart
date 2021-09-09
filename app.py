@@ -2,21 +2,10 @@
 from aws_cdk import core as cdk
 
 from devsecops_quickstart.pipeline import CICDPipeline
-from devsecops_quickstart.repository import Repository
 
 app = cdk.App()
 config = app.node.try_get_context("config")
 general_config = config["general"]
-
-repository = Repository(
-    app,
-    id=f"{general_config['repository_name']}-repository",
-    general_config=general_config,
-    env=cdk.Environment(
-        account=general_config["toolchain_account"],
-        region=general_config["toolchain_region"],
-    ),
-)
 
 developmentPipeline = CICDPipeline(
     app,

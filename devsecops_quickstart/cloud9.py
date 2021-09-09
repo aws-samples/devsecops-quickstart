@@ -6,12 +6,17 @@ import aws_cdk.aws_codecommit as codecommit
 
 class Cloud9Stack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, general_config: dict, **kwargs):
+
         super().__init__(scope, id="Cloud9", **kwargs)
 
-        repository = codecommit.Repository.from_repository_name(
+        repository = codecommit.Repository(
+            self, "Repository", repository_name=general_config["repository_name"]
+        )
+
+        cdk.CfnOutput(
             self,
-            id="Repository",
-            repository_name=general_config["repository_name"],
+            "Repository_Clone_URL",
+            value=repository.repository_clone_url_http,
         )
 
         vpc = ec2.Vpc(self, "Cloud9-VPC", max_azs=3)

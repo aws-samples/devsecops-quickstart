@@ -66,17 +66,18 @@ class CICDPipeline(cdk.Stack):
             ),
         )
 
-        pipeline.add_application_stage(
-            app_stage=Cloud9Stage(
-                self,
-                stage="toolchain",
-                general_config=general_config,
-                env=cdk.Environment(
-                    account=general_config["toolchain_account"],
-                    region=general_config["toolchain_region"],
+        if "dev" in stages_config:
+            pipeline.add_application_stage(
+                app_stage=Cloud9Stage(
+                    self,
+                    stage="toolchain",
+                    general_config=general_config,
+                    env=cdk.Environment(
+                        account=general_config["toolchain_account"],
+                        region=general_config["toolchain_region"],
+                    ),
                 ),
-            ),
-        )
+            )
 
         # for stage_config_item in config_stages.items():
         #     stage = stage_config_item[0]
