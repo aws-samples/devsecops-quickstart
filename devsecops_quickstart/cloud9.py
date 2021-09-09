@@ -67,7 +67,11 @@ class Cloud9Stack(cdk.Stack):
             ],
         )
 
-        ide_url = f"https://{general_config['toolchain_region']}.console.aws.amazon.com/cloud9/ide/{cloud9_environment.ref}"
+        ide_url = "https://{region}.console.aws.amazon.com/cloud9/ide/{id}".format(
+            region={general_config['toolchain_region']},
+            id=cloud9_environment.ref
+        )
+
         cdk.CfnOutput(self, "Cloud9_IDE_URL", value=ide_url)
 
 
