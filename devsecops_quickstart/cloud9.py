@@ -11,8 +11,10 @@ class Cloud9Stack(cdk.Stack):
 
         super().__init__(scope, id="Cloud9", **kwargs)
 
-        repository = codecommit.Repository(
-            self, "Repository", repository_name=general_config["repository_name"]
+        repository = codecommit.Repository.from_repository_name(
+            self,
+            id="Repository",
+            repository_name=general_config["repository_name"],
         )
 
         cdk.CfnOutput(

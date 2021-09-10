@@ -8,7 +8,7 @@ import aws_cdk.aws_codecommit as codecommit
 import logging
 
 from devsecops_quickstart.cloud9 import Cloud9Stage
-from devsecops_quickstart.sample_app import SampleAppStage
+from devsecops_quickstart.sample_app.sample_app import SampleAppStage
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -21,15 +21,21 @@ class CICDPipeline(cdk.Stack):
         id: str,
         general_config: dict,
         stages_config: dict,
+        is_development_pipeline: bool,
         **kwargs,
     ) -> None:
         super().__init__(scope, id, stack_name=id, **kwargs)
 
-        repository = codecommit.Repository.from_repository_name(
-            self,
-            id="Repository",
-            repository_name=general_config["repository_name"],
-        )
+        if is_development_pipeline:
+            repository = codecommit.Repository(
+                self, "Repository", repository_name=general_config["repository_name"]
+            )
+        else:
+            repository = codecommit.Repository.from_repository_name(
+                self,
+                id="Repository",
+                repository_name=general_config["repository_name"],
+            )
 
         # Defines the artifact representing the sourcecode
         source_artifact = codepipeline.Artifact()
@@ -44,7 +50,9 @@ class CICDPipeline(cdk.Stack):
             pipeline_name=id,
             source_action=codepipeline_actions.CodeCommitSourceAction(
                 repository=repository,
-                branch=general_config["development_branch"],
+                branch=general_config["development_branch"]
+                if is_development_pipeline
+                else general_config["production_branch"],
                 output=source_artifact,
                 action_name="Source",
             ),
@@ -56,18 +64,20 @@ class CICDPipeline(cdk.Stack):
                     "--storage-driver=overlay2 &",
                     'timeout 15 sh -c "until docker info; do echo .; sleep 1; done"',
                     "npm install aws-cdk -g",
+                    "npm install snyk",
                     "pip install -r requirements.txt",
                 ],
                 synth_command="npx cdk synth",
                 test_commands=[
                     "python -m flake8 .",
                     "python -m black --check .",
+                    "bandit -r devsecops_quickstart",
                 ],
                 environment=codebuild.BuildEnvironment(privileged=True),
             ),
         )
 
-        if "dev" in stages_config:
+        if is_development_pipeline:
             pipeline.add_application_stage(
                 app_stage=Cloud9Stage(
                     self,
