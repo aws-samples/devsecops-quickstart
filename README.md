@@ -75,6 +75,12 @@ Run the following command to list all CDK apps defined.
 $ cdk ls
 ```
 
+Create new secret containing Snyk authentication token for snyk integration:
+```
+$ ./create_secret_helper.sh snyk-auth-token <snyk-auth-token-value>
+```
+
+
 Deploy the AWS CodeCommit repository in the toolchain account. The repository name will be taken from 
 the `repository_name` config parameter in `cdk.json`.
 
