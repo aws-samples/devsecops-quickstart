@@ -4,6 +4,7 @@ import aws_cdk.aws_codepipeline as codepipeline
 import aws_cdk.aws_codepipeline_actions as codepipeline_actions
 import aws_cdk.pipelines as pipelines
 import aws_cdk.aws_codecommit as codecommit
+import aws_cdk.aws_iam as iam
 
 import logging
 
@@ -81,6 +82,20 @@ class CICDPipeline(cdk.Stack):
                     "snyk monitor",
                 ],
                 environment=codebuild.BuildEnvironment(privileged=True),
+                role_policy_statements=[
+                    iam.PolicyStatement(
+                        effect=iam.Effect.ALLOW,
+                        actions=[
+                            "secretsmanager:GetResourcePolicy",
+                            "secretsmanager:GetSecretValue",
+                            "secretsmanager:DescribeSecret",
+                            "secretsmanager:ListSecretVersionIds"
+                        ],
+                        resources=[
+                            "*"
+                        ]
+                    )
+                ]
             ),
         )
 
