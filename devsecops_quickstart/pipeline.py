@@ -84,10 +84,10 @@ class CICDPipeline(cdk.Stack):
                     iam.PolicyStatement(
                         effect=iam.Effect.ALLOW,
                         actions=[
-                            "secretsmanager:GetResourcePolicy",
+                            # "secretsmanager:GetResourcePolicy",
                             "secretsmanager:GetSecretValue",
-                            "secretsmanager:DescribeSecret",
-                            "secretsmanager:ListSecretVersionIds",
+                            # "secretsmanager:DescribeSecret",
+                            # "secretsmanager:ListSecretVersionIds",
                         ],
                         resources=["*"],
                     )
