@@ -89,13 +89,11 @@ class CICDPipeline(cdk.Stack):
                             "secretsmanager:GetResourcePolicy",
                             "secretsmanager:GetSecretValue",
                             "secretsmanager:DescribeSecret",
-                            "secretsmanager:ListSecretVersionIds"
+                            "secretsmanager:ListSecretVersionIds",
                         ],
-                        resources=[
-                            "*"
-                        ]
+                        resources=["*"],
                     )
-                ]
+                ],
             ),
         )
 
