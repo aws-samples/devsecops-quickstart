@@ -23,7 +23,7 @@ class Cloud9Stack(cdk.Stack):
             value=repository.repository_clone_url_http,
         )
 
-        secret = secretmanager.Secret( # nosec
+        secret = secretmanager.Secret(  # nosec
             self,
             id="cloud9_admin_password",
             secret_name="cloud9_admin_password",
