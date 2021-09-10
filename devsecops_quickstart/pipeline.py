@@ -27,9 +27,7 @@ class CICDPipeline(cdk.Stack):
         super().__init__(scope, id, stack_name=id, **kwargs)
 
         if is_development_pipeline:
-            repository = codecommit.Repository(
-                self, "Repository", repository_name=general_config["repository_name"]
-            )
+            repository = codecommit.Repository(self, "Repository", repository_name=general_config["repository_name"])
         else:
             repository = codecommit.Repository.from_repository_name(
                 self,

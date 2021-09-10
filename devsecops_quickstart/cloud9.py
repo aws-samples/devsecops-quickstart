@@ -77,9 +77,7 @@ class Cloud9Stack(cdk.Stack):
 
 
 class Cloud9Stage(cdk.Stage):
-    def __init__(
-        self, scope: cdk.Construct, stage: str, general_config: dict, **kwargs
-    ):
+    def __init__(self, scope: cdk.Construct, stage: str, general_config: dict, **kwargs):
         super().__init__(scope, id=stage, **kwargs)
 
         Cloud9Stack(self, general_config=general_config, **kwargs)

@@ -23,9 +23,7 @@ productionPipeline = CICDPipeline(
     app,
     id=f"{general_config['repository_name']}-cicd-production",
     general_config=general_config,
-    stages_config=dict(
-        filter(lambda item: item[0] in ["qa", "prod"], config["stage"].items())
-    ),
+    stages_config=dict(filter(lambda item: item[0] in ["qa", "prod"], config["stage"].items())),
     is_development_pipeline=False,
     env=cdk.Environment(
         account=general_config["toolchain_account"],
