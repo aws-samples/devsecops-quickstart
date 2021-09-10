@@ -78,6 +78,7 @@ class CICDPipeline(cdk.Stack):
                     ),
                     "SNYK_TOKEN=`echo $snyk_secret | jq -r '.\"snyk-authentication-token\"'`",
                     "snyk test",
+                    "snyk monitor"
                 ],
                 environment=codebuild.BuildEnvironment(privileged=True),
             ),
