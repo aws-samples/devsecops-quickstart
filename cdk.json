@@ -20,7 +20,10 @@
         "development_branch": "development",
         "production_branch": "master",
         "toolchain_account": "911685872277",
-        "toolchain_region": "eu-central-1"
+        "toolchain_region": "eu-central-1",
+        "secret_name": {
+          "snyk": "snyk-integration-config"
+        }
       },
       "stage": {
         "dev": {

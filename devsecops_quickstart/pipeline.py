@@ -70,6 +70,14 @@ class CICDPipeline(cdk.Stack):
                     "python -m flake8 .",
                     "python -m black --check .",
                     "python -m bandit -v -r devsecops_quickstart",
+                    (
+                        "snyk_secret=`aws secretsmanager get-secret-value "
+                        "--query SecretString --output text "
+                        f"--secret-id {general_config['secret_name']['snyk']} "
+                        f"--region {general_config['toolchain_region']}`"
+                    ),
+                    "SNYK_TOKEN=`echo $snyk_secret | jq -r '.\"snyk-authentication-token\"'`",
+                    "snyk test",
                 ],
                 environment=codebuild.BuildEnvironment(privileged=True),
             ),
