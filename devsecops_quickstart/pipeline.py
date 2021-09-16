@@ -108,6 +108,22 @@ class CICDPipeline(cdk.Stack):
                 ),
             )
 
+        test_stage = pipeline.add_stage("test")
+        bandit_project = codebuild.PipelineProject(
+            self,
+            "Bandit",
+            build_spec=codebuild.BuildSpec.from_object(
+                {"version": "0.2", "phases": {"build": {"commands": ["python -m bandit -v -r devsecops_quickstart"]}}}
+            ),
+        )
+        test_stage.add_actions(
+            codepipeline_actions.CodeBuildAction(
+                action_name="bandit",
+                project=bandit_project,
+                input=cloud_assembly_artifact,
+            ),
+        )
+
         for stage_config_item in stages_config.items():
             stage = stage_config_item[0]
             stage_config = stage_config_item[1]
