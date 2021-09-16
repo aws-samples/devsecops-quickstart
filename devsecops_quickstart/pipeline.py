@@ -8,7 +8,7 @@ import aws_cdk.aws_iam as iam
 
 import logging
 
-from devsecops_quickstart.cloud9 import Cloud9Stage
+from devsecops_quickstart.toolchain import ToolchainStage
 from devsecops_quickstart.sample_app.sample_app import SampleAppStage
 
 logger = logging.getLogger()
@@ -94,9 +94,8 @@ class CICDPipeline(cdk.Stack):
 
         if is_development_pipeline:
             pipeline.add_application_stage(
-                app_stage=Cloud9Stage(
+                app_stage=ToolchainStage(
                     self,
-                    stage="toolchain",
                     general_config=general_config,
                     env=cdk.Environment(
                         account=general_config["toolchain_account"],
