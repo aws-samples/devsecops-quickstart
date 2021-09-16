@@ -96,10 +96,10 @@ class CICDPipeline(cdk.Stack):
             build_spec=codebuild.BuildSpec.from_object(
                 {
                     "version": "0.2",
-                    "phases": [
-                        {"install": {"commands": ["pip install bandit"]}},
-                        {"build": {"commands": ["python -m bandit -v -r devsecops_quickstart"]}},
-                    ],
+                    "phases": {
+                        "install": {"commands": ["pip install bandit"]},
+                        "build": {"commands": ["python -m bandit -v -r devsecops_quickstart"]},
+                    },
                 }
             ),
         )
@@ -127,23 +127,21 @@ class CICDPipeline(cdk.Stack):
             build_spec=codebuild.BuildSpec.from_object(
                 {
                     "version": "0.2",
-                    "phases": [
-                        {"install": {"commands": ["npm install -g snyk"]}},
-                        {
-                            "build": {
-                                "commands": [
-                                    (
-                                        "SNYK_TOKEN=$(aws secretsmanager get-secret-value "
-                                        "--query SecretString --output text "
-                                        f"--secret-id {general_config['secret_name']['snyk']} "
-                                        f"--region {general_config['toolchain_region']})"
-                                    ),
-                                    "snyk test",
-                                    "snyk monitor",
-                                ]
-                            }
+                    "phases": {
+                        "install": {"commands": ["npm install -g snyk"]},
+                        "build": {
+                            "commands": [
+                                (
+                                    "SNYK_TOKEN=$(aws secretsmanager get-secret-value "
+                                    "--query SecretString --output text "
+                                    f"--secret-id {general_config['secret_name']['snyk']} "
+                                    f"--region {general_config['toolchain_region']})"
+                                ),
+                                "snyk test",
+                                "snyk monitor",
+                            ]
                         },
-                    ],
+                    },
                 }
             ),
         )
