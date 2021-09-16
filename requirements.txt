@@ -55,7 +55,6 @@ aws-cdk.cx-api==1.122.0
 aws-cdk.lambda-layer-awscli==1.122.0
 aws-cdk.pipelines==1.122.0
 aws-cdk.region-info==1.122.0
-bandit==1.7.0
 black==21.8b0
 boto3==1.18.34
 botocore==1.21.34

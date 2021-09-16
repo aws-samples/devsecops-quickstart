@@ -113,7 +113,13 @@ class CICDPipeline(cdk.Stack):
             self,
             "Bandit",
             build_spec=codebuild.BuildSpec.from_object(
-                {"version": "0.2", "phases": {"build": {"commands": ["python -m bandit -v -r devsecops_quickstart"]}}}
+                {
+                    "version": "0.2",
+                    "phases": [
+                        {"install": {"commands": ["pip install bandit"]}},
+                        {"build": {"commands": ["python -m bandit -v -r devsecops_quickstart"]}},
+                    ],
+                }
             ),
         )
         test_stage.add_actions(
