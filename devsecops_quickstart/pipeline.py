@@ -151,13 +151,13 @@ class CICDPipeline(cdk.Stack):
             codepipeline_actions.CodeBuildAction(
                 action_name="bandit",
                 project=bandit_project,
-                input=cloud_assembly_artifact,
+                input=source_artifact,
                 type=codepipeline_actions.CodeBuildActionType.TEST,
             ),
             codepipeline_actions.CodeBuildAction(
                 action_name="snyk",
                 project=snyk_project,
-                input=cloud_assembly_artifact,
+                input=source_artifact,
                 type=codepipeline_actions.CodeBuildActionType.TEST,
             ),
         )
