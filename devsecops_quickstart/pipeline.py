@@ -133,7 +133,8 @@ class CICDPipeline(cdk.Stack):
                             "build": {
                                 "commands": [
                                     (
-                                        "SNYK_TOKEN=$(aws secretsmanager get-secret-value --query SecretString --output text "
+                                        "SNYK_TOKEN=$(aws secretsmanager get-secret-value "
+                                        "--query SecretString --output text "
                                         f"--secret-id {general_config['secret_name']['snyk']} "
                                         f"--region {general_config['toolchain_region']})"
                                     ),
@@ -153,13 +154,13 @@ class CICDPipeline(cdk.Stack):
                 action_name="bandit",
                 project=bandit_project,
                 input=cloud_assembly_artifact,
-                type=codepipeline_actions.CodeBuildActionType.TEST
+                type=codepipeline_actions.CodeBuildActionType.TEST,
             ),
             codepipeline_actions.CodeBuildAction(
                 action_name="snyk",
                 project=snyk_project,
                 input=cloud_assembly_artifact,
-                type=codepipeline_actions.CodeBuildActionType.TEST
+                type=codepipeline_actions.CodeBuildActionType.TEST,
             ),
         )
 
