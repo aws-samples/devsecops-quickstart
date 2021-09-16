@@ -74,4 +74,3 @@ class Cloud9Stack(cdk.Stack):
         )
 
         cdk.CfnOutput(self, "Cloud9_IDE_URL", value=ide_url)
-

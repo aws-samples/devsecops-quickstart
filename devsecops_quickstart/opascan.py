@@ -7,10 +7,11 @@ class OPAScanStack(cdk.Stack):
 
         super().__init__(scope, id="OPAScan", **kwargs)
 
-        self.handler = lambda_.GoFunction(self, "opa-scan",
-                  entry="devsecops_quickstart/opa-scan/lambda",
-                  # bundling=lambda_.BundlingOptions(
-                  #     forced_docker_bundling=True
-                  # )
+        self.handler = lambda_.GoFunction(
+            self,
+            "opa-scan",
+            entry="devsecops_quickstart/opa-scan/lambda",
+            # bundling=lambda_.BundlingOptions(
+            #     forced_docker_bundling=True
+            # )
         )
-
