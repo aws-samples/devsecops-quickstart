@@ -65,6 +65,10 @@ class CICDPipeline(cdk.Stack):
                     "npm install aws-cdk -g",
                     "npm install -g snyk",
                     "pip install -r requirements.txt",
+                    "cd $HOME/.goenv && git pull --ff-only && cd -",
+                    "goenv install 1.16.3",
+                    "goenv local 1.16.3",
+                    "go version",
                 ],
                 synth_command="npx cdk synth",
                 test_commands=[
