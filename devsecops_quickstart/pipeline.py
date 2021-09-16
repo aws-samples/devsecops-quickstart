@@ -74,7 +74,6 @@ class CICDPipeline(cdk.Stack):
                 test_commands=[
                     "python -m flake8 .",
                     "python -m black --check .",
-                    "python -m bandit -v -r devsecops_quickstart",
                     (
                         "SNYK_TOKEN=$(aws secretsmanager get-secret-value --query SecretString --output text "
                         f"--secret-id {general_config['secret_name']['snyk']} "
