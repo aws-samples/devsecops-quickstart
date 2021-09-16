@@ -63,7 +63,6 @@ class CICDPipeline(cdk.Stack):
                     "--storage-driver=overlay2 &",
                     'timeout 15 sh -c "until docker info; do echo .; sleep 1; done"',
                     "npm install aws-cdk -g",
-                    "npm install -g snyk",
                     "pip install -r requirements.txt",
                     "cd $HOME/.goenv && git pull --ff-only && cd -",
                     "goenv install 1.16.3",
@@ -74,24 +73,8 @@ class CICDPipeline(cdk.Stack):
                 test_commands=[
                     "python -m flake8 .",
                     "python -m black --check .",
-                    (
-                        "SNYK_TOKEN=$(aws secretsmanager get-secret-value --query SecretString --output text "
-                        f"--secret-id {general_config['secret_name']['snyk']} "
-                        f"--region {general_config['toolchain_region']})"
-                    ),
-                    "snyk test",
-                    "snyk monitor",
                 ],
                 environment=codebuild.BuildEnvironment(privileged=True),
-                role_policy_statements=[
-                    iam.PolicyStatement(
-                        effect=iam.Effect.ALLOW,
-                        actions=[
-                            "secretsmanager:GetSecretValue",
-                        ],
-                        resources=["*"],
-                    )
-                ],
             ),
         )
 
@@ -107,7 +90,6 @@ class CICDPipeline(cdk.Stack):
                 ),
             )
 
-        test_stage = pipeline.add_stage("test")
         bandit_project = codebuild.PipelineProject(
             self,
             "Bandit",
@@ -121,11 +103,63 @@ class CICDPipeline(cdk.Stack):
                 }
             ),
         )
+        snyk_project = codebuild.PipelineProject(
+            self,
+            "Snyk",
+            role=iam.Role(
+                self,
+                "snyk-build-role",
+                assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com"),
+                inline_policies={
+                    "GetSecretValue": iam.PolicyDocument(
+                        statements=[
+                            iam.PolicyStatement(
+                                effect=iam.Effect.ALLOW,
+                                actions=[
+                                    "secretsmanager:GetSecretValue",
+                                ],
+                                resources=["*"],
+                            )
+                        ]
+                    )
+                },
+            ),
+            build_spec=codebuild.BuildSpec.from_object(
+                {
+                    "version": "0.2",
+                    "phases": [
+                        {"install": {"commands": ["npm install -g snyk"]}},
+                        {
+                            "build": {
+                                "commands": [
+                                    (
+                                        "SNYK_TOKEN=$(aws secretsmanager get-secret-value --query SecretString --output text "
+                                        f"--secret-id {general_config['secret_name']['snyk']} "
+                                        f"--region {general_config['toolchain_region']})"
+                                    ),
+                                    "snyk test",
+                                    "snyk monitor",
+                                ]
+                            }
+                        },
+                    ],
+                }
+            ),
+        )
+
+        test_stage = pipeline.add_stage("test")
         test_stage.add_actions(
             codepipeline_actions.CodeBuildAction(
                 action_name="bandit",
                 project=bandit_project,
                 input=cloud_assembly_artifact,
+                type=codepipeline_actions.CodeBuildActionType.TEST
+            ),
+            codepipeline_actions.CodeBuildAction(
+                action_name="snyk",
+                project=snyk_project,
+                input=cloud_assembly_artifact,
+                type=codepipeline_actions.CodeBuildActionType.TEST
             ),
         )
 
