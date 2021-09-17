@@ -175,7 +175,7 @@ class CICDPipelineStack(cdk.Stack):
                 lambda_=lambda_.Function.from_function_arn(self, "opa-scan-lambda", opa_scan_lambda_arn.string_value),
                 user_parameters={
                     "Rules": f"s3://{opa_scan_rules_bucket_name.string_value}",
-                    "Input": "s3 bucket location of the cloudformation template",
+                    "Input": cloud_assembly_artifact.s3_location,
                 },
             ),
         )
