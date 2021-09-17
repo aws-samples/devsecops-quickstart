@@ -96,11 +96,11 @@ type CodePipelineArtifactCredentials struct {
 }
 
 func HandleLambdaRequest(ctx context.Context, event MyEvent) (string, error) {
+	fmt.Print("Handler started!")
+
 	output := make(map[string]string)
 	var err error
 	var codePipelineJob CodePipelineJob
-
-	fmt.Print(event)
 
 	// Read event from CodePipeline
 	if event.CodePipelineJob.ID != "" {
@@ -184,6 +184,7 @@ func main() {
 	fmt.Println("Running OpaScan.....")
 
 	if os.Getenv("RUN_ON_LAMBDA") == "True" {
+		fmt.Print("Running on Lambda!")
 		lambda.Start(HandleLambdaRequest)
 	} else {
 		ctx := context.Background()

@@ -1,5 +1,6 @@
 import aws_cdk.core as cdk
-import aws_cdk.aws_lambda_go as lambda_
+import aws_cdk.aws_lambda_go as lambda_go
+import aws_cdk.aws_lambda as lambda_
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_s3_deployment as s3_deployment
@@ -52,13 +53,15 @@ class OPAScanStack(cdk.Stack):
             )
         )
 
-        handler = lambda_.GoFunction(
+        handler = lambda_go.GoFunction(
             self,
             "opa-scan",
             entry="devsecops_quickstart/opa_scan/lambda",
             role=lambda_role,
             environment={"RUN_ON_LAMBDA": "True"},
             timeout=cdk.Duration.minutes(2),
+            memory_size=256,
+            runtime=lambda_.Runtime.GO_1_X,
         )
 
         ssm.StringParameter(
