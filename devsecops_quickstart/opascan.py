@@ -13,7 +13,7 @@ class OPAScanStack(cdk.Stack):
         rules_bucket = s3.Bucket(
             self,
             id="opa-scan-rules-bucket",
-            bucket_name=f"opa-scan-rules-{self.stack_name}-{self.account}",
+            bucket_name=f"opa-scan-rules-{self.account}",
             removal_policy=cdk.RemovalPolicy.DESTROY,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
         )
@@ -34,19 +34,19 @@ class OPAScanStack(cdk.Stack):
 
         lambda_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
-                self, "s3-full-access" "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+                self, "s3-full-access", "arn:aws:iam::aws:policy/AmazonS3FullAccess"
             )
         )
 
         lambda_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
-                self, "codepipeline-full-access" "arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess"
+                self, "codepipeline-full-access", "arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess"
             )
         )
 
         lambda_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
-                self, "lambda-service-basic-role" "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
             )
         )
 
