@@ -3,6 +3,7 @@ import aws_cdk.aws_lambda_go as lambda_
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_s3_deployment as s3_deployment
+import aws_cdk.aws_ssm as ssm
 
 
 class OPAScanStack(cdk.Stack):
@@ -18,6 +19,13 @@ class OPAScanStack(cdk.Stack):
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
         )
 
+        ssm.StringParameter(
+            self,
+            "bucket-url-ssm-param",
+            parameter_name="opa-scan-rules-bucket-name",
+            string_value=rules_bucket.bucket_name,
+        )
+
         s3_deployment.BucketDeployment(
             self,
             id="opa-scan-rules-deployment",
@@ -26,6 +34,7 @@ class OPAScanStack(cdk.Stack):
             memory_limit=128,
         )
 
+        # TODO restrict access
         lambda_role = iam.Role(
             self,
             "opa-scan-lambda-role",
@@ -50,10 +59,14 @@ class OPAScanStack(cdk.Stack):
             )
         )
 
-        self.handler = lambda_.GoFunction(
+        handler = lambda_.GoFunction(
             self,
             "opa-scan",
             entry="devsecops_quickstart/opa-scan/lambda",
             role=lambda_role,
             environment={"RUN_ON_LAMBDA": "True"},
+        )
+
+        ssm.StringParameter(
+            self, "lambda-arn-ssm-param", parameter_name="opa-scan-lambda-arn", string_value=handler.function_arn
         )

@@ -5,6 +5,10 @@ import aws_cdk.aws_codepipeline_actions as codepipeline_actions
 import aws_cdk.pipelines as pipelines
 import aws_cdk.aws_codecommit as codecommit
 import aws_cdk.aws_iam as iam
+import aws_cdk.aws_lambda as lambda_
+import aws_cdk.aws_ssm as ssm
+
+from botocore.exceptions import ClientError
 
 import logging
 
@@ -152,8 +156,8 @@ class CICDPipeline(cdk.Stack):
             ),
         )
 
-        test_stage = pipeline.add_stage("validate")
-        test_stage.add_actions(
+        validate_stage = pipeline.add_stage("validate")
+        validate_stage.add_actions(
             codepipeline_actions.CodeBuildAction(
                 action_name="bandit",
                 project=bandit_project,
@@ -167,6 +171,36 @@ class CICDPipeline(cdk.Stack):
                 type=codepipeline_actions.CodeBuildActionType.TEST,
             ),
         )
+
+        try:
+            opa_scan_lambda_arn = ssm.StringParameter.from_string_parameter_name(
+                self, "lambda-arn-ssm-param", "opa-scan-lambda-arn"
+            )
+            opa_scan_rules_bucket_name = ssm.StringParameter.from_string_parameter_name(
+                self, "bucket-url-ssm-param", "opa-scan-rules-bucket-name"
+            )
+
+            validate_stage.add_actions(
+                codepipeline_actions.LambdaInvokeAction(
+                    action_name="opa-scan",
+                    lambda_=lambda_.Function.from_function_arn(
+                        self, "opa-scan-lambda", opa_scan_lambda_arn.string_value
+                    ),
+                    user_parameters={
+                        "Rules": f"s3://{opa_scan_rules_bucket_name.string_value}",
+                        "Input": "s3 bucket location of the cloudformation template",
+                    },
+                ),
+            )
+
+        except ClientError as e:
+            print(e)
+            # if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            #     print(
+            #         f"instance_id: {instance_id} no longer exists, nothing to do."
+            #     )
+            # else:
+            #     raise e
 
         for stage_config_item in stages_config.items():
             stage = stage_config_item[0]
