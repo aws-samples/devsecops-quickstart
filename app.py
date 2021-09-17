@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from aws_cdk import core as cdk
 
-from devsecops_quickstart.opascan import OPAScanStack
+from devsecops_quickstart.opa_scan.opascan import OPAScanStack
 from devsecops_quickstart.pipeline import CICDPipelineStack
 
 app = cdk.App()

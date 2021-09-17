@@ -23,7 +23,7 @@ class OPAScanStack(cdk.Stack):
             self,
             id="opa-scan-rules-deployment",
             destination_bucket=rules_bucket,
-            sources=[s3_deployment.Source.asset("./devsecops_quickstart/opa-scan/rules")],
+            sources=[s3_deployment.Source.asset("./devsecops_quickstart/opa_scan/rules")],
             memory_limit=128,
         )
 
@@ -55,7 +55,7 @@ class OPAScanStack(cdk.Stack):
         handler = lambda_.GoFunction(
             self,
             "opa-scan",
-            entry="devsecops_quickstart/opa-scan/lambda",
+            entry="devsecops_quickstart/opa_scan/lambda",
             role=lambda_role,
             environment={"RUN_ON_LAMBDA": "True"},
         )
