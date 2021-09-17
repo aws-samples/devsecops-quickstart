@@ -11,7 +11,9 @@ aws-cdk.aws-s3==1.122.0
 aws-cdk.aws-s3-assets==1.122.0
 aws-cdk.aws-s3-deployment==1.122.0
 aws-cdk.pipelines==1.122.0
+aws-cdk.aws_ssm==1.122.0
 black==21.8b0
 boto3==1.18.34
 botocore==1.21.34
 flake8==3.9.2
+urllib3==1.26.5
