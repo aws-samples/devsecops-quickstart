@@ -100,15 +100,18 @@ $ git commit -m "initial commit"
 $ git push --set-upstream origin development
 ```
 
+Run the following command to deploy OPA Scan stack into toolchain account.
+
+```
+$ cdk deploy devsecops-quickstart-opa-scan --profile toolchain-profile
+```
+
 Run the following command to deploy the development CI/CD pipeline. The development pipeline will track changes from
 `development_branch` as configured in `cdk.json`. 
 
 ```
 $ cdk deploy devsecops-quickstart-cicd-development --profile toolchain-profile
 ```
-
-
-
 
 Run the following command to deploy the production CI/CD pipeline. The production pipeline will track changes from
 `production_branch` as configured in `cdk.json`.

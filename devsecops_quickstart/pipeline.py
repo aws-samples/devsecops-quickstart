@@ -8,18 +8,23 @@ import aws_cdk.aws_iam as iam
 import aws_cdk.aws_lambda as lambda_
 import aws_cdk.aws_ssm as ssm
 
-from botocore.exceptions import ClientError
-
 import logging
 
-from devsecops_quickstart.toolchain import ToolchainStage
+from devsecops_quickstart.cloud9 import Cloud9Stack
 from devsecops_quickstart.sample_app.sample_app import SampleAppStage
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class CICDPipeline(cdk.Stack):
+class ToolingStage(cdk.Stage):
+    def __init__(self, scope: cdk.Construct, general_config: dict, **kwargs):
+        super().__init__(scope, id="tooling", **kwargs)
+
+        Cloud9Stack(self, general_config=general_config, **kwargs)
+
+
+class CICDPipelineStack(cdk.Stack):
     def __init__(
         self,
         scope: cdk.Construct,
@@ -81,18 +86,6 @@ class CICDPipeline(cdk.Stack):
                 environment=codebuild.BuildEnvironment(privileged=True),
             ),
         )
-
-        if is_development_pipeline:
-            pipeline.add_application_stage(
-                app_stage=ToolchainStage(
-                    self,
-                    general_config=general_config,
-                    env=cdk.Environment(
-                        account=general_config["toolchain_account"],
-                        region=general_config["toolchain_region"],
-                    ),
-                ),
-            )
 
         bandit_project = codebuild.PipelineProject(
             self,
@@ -156,6 +149,13 @@ class CICDPipeline(cdk.Stack):
             ),
         )
 
+        opa_scan_rules_bucket_name = ssm.StringParameter.from_string_parameter_name(
+            self, "bucket-url-ssm-param", general_config["parameter_name"]["opa_scan_rules_bucket"]
+        )
+        opa_scan_lambda_arn = ssm.StringParameter.from_string_parameter_name(
+            self, "lambda-arn-ssm-param", general_config["parameter_name"]["opa-scan-lambda"]
+        )
+
         validate_stage = pipeline.add_stage("validate")
         validate_stage.add_actions(
             codepipeline_actions.CodeBuildAction(
@@ -170,37 +170,27 @@ class CICDPipeline(cdk.Stack):
                 input=source_artifact,
                 type=codepipeline_actions.CodeBuildActionType.TEST,
             ),
+            codepipeline_actions.LambdaInvokeAction(
+                action_name="opa-scan",
+                lambda_=lambda_.Function.from_function_arn(self, "opa-scan-lambda", opa_scan_lambda_arn.string_value),
+                user_parameters={
+                    "Rules": f"s3://{opa_scan_rules_bucket_name.string_value}",
+                    "Input": "s3 bucket location of the cloudformation template",
+                },
+            ),
         )
 
-        try:
-            opa_scan_lambda_arn = ssm.StringParameter.from_string_parameter_name(
-                self, "lambda-arn-ssm-param", "opa-scan-lambda-arn"
-            )
-            opa_scan_rules_bucket_name = ssm.StringParameter.from_string_parameter_name(
-                self, "bucket-url-ssm-param", "opa-scan-rules-bucket-name"
-            )
-
-            validate_stage.add_actions(
-                codepipeline_actions.LambdaInvokeAction(
-                    action_name="opa-scan",
-                    lambda_=lambda_.Function.from_function_arn(
-                        self, "opa-scan-lambda", opa_scan_lambda_arn.string_value
+        if is_development_pipeline:
+            pipeline.add_application_stage(
+                app_stage=ToolingStage(
+                    self,
+                    general_config=general_config,
+                    env=cdk.Environment(
+                        account=general_config["toolchain_account"],
+                        region=general_config["toolchain_region"],
                     ),
-                    user_parameters={
-                        "Rules": f"s3://{opa_scan_rules_bucket_name.string_value}",
-                        "Input": "s3 bucket location of the cloudformation template",
-                    },
                 ),
             )
-
-        except ClientError as e:
-            print(e)
-            # if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-            #     print(
-            #         f"instance_id: {instance_id} no longer exists, nothing to do."
-            #     )
-            # else:
-            #     raise e
 
         for stage_config_item in stages_config.items():
             stage = stage_config_item[0]

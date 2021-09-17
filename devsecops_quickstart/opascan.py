@@ -7,9 +7,9 @@ import aws_cdk.aws_ssm as ssm
 
 
 class OPAScanStack(cdk.Stack):
-    def __init__(self, scope: cdk.Construct, general_config: dict, **kwargs):
+    def __init__(self, scope: cdk.Construct, id: str, general_config: dict, **kwargs):
 
-        super().__init__(scope, id="OPAScan", **kwargs)
+        super().__init__(scope, id, **kwargs)
 
         rules_bucket = s3.Bucket(
             self,
@@ -17,13 +17,6 @@ class OPAScanStack(cdk.Stack):
             bucket_name=f"opa-scan-rules-{self.account}",
             removal_policy=cdk.RemovalPolicy.DESTROY,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
-        )
-
-        ssm.StringParameter(
-            self,
-            "bucket-url-ssm-param",
-            parameter_name="opa-scan-rules-bucket-name",
-            string_value=rules_bucket.bucket_name,
         )
 
         s3_deployment.BucketDeployment(
@@ -68,5 +61,15 @@ class OPAScanStack(cdk.Stack):
         )
 
         ssm.StringParameter(
-            self, "lambda-arn-ssm-param", parameter_name="opa-scan-lambda-arn", string_value=handler.function_arn
+            self,
+            "bucket-url-ssm-param",
+            parameter_name=general_config["parameter_name"]["opa_scan_rules_bucket"],
+            string_value=rules_bucket.bucket_name,
+        )
+
+        ssm.StringParameter(
+            self,
+            "lambda-arn-ssm-param",
+            parameter_name=general_config["parameter_name"]["opa-scan-lambda"],
+            string_value=handler.function_arn,
         )
