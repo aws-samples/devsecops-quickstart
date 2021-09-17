@@ -100,6 +100,8 @@ func HandleLambdaRequest(ctx context.Context, event MyEvent) (string, error) {
 	var err error
 	var codePipelineJob CodePipelineJob
 
+	fmt.Print(event)
+
 	// Read event from CodePipeline
 	if event.CodePipelineJob.ID != "" {
 		codePipelineJob = event.CodePipelineJob

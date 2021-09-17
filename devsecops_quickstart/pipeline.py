@@ -172,6 +172,7 @@ class CICDPipelineStack(cdk.Stack):
             ),
             codepipeline_actions.LambdaInvokeAction(
                 action_name="opa-scan",
+                inputs=[cloud_assembly_artifact],
                 lambda_=lambda_.Function.from_function_arn(self, "opa-scan-lambda", opa_scan_lambda_arn.string_value),
                 user_parameters={
                     "Rules": f"s3://{opa_scan_rules_bucket_name.string_value}",

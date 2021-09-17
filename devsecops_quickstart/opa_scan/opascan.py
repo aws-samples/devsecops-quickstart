@@ -58,6 +58,7 @@ class OPAScanStack(cdk.Stack):
             entry="devsecops_quickstart/opa_scan/lambda",
             role=lambda_role,
             environment={"RUN_ON_LAMBDA": "True"},
+            timeout=cdk.Duration.minutes(2),
         )
 
         ssm.StringParameter(
