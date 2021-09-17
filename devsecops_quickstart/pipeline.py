@@ -146,7 +146,7 @@ class CICDPipeline(cdk.Stack):
             ),
         )
 
-        test_stage = pipeline.add_stage("test")
+        test_stage = pipeline.add_stage("validate")
         test_stage.add_actions(
             codepipeline_actions.CodeBuildAction(
                 action_name="bandit",
