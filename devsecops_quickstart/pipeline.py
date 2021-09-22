@@ -6,8 +6,8 @@ import aws_cdk.pipelines as pipelines
 import aws_cdk.aws_codecommit as codecommit
 import aws_cdk.aws_iam as iam
 
-# import aws_cdk.aws_lambda as lambda_
-# import aws_cdk.aws_ssm as ssm
+import aws_cdk.aws_lambda as lambda_
+import aws_cdk.aws_ssm as ssm
 
 import logging
 
@@ -150,12 +150,12 @@ class CICDPipelineStack(cdk.Stack):
             ),
         )
 
-        # opa_scan_rules_bucket_name = ssm.StringParameter.from_string_parameter_name(
-        #     self, "bucket-url-ssm-param", general_config["parameter_name"]["opa_scan_rules_bucket"]
-        # )
-        # opa_scan_lambda_arn = ssm.StringParameter.from_string_parameter_name(
-        #     self, "lambda-arn-ssm-param", general_config["parameter_name"]["opa-scan-lambda"]
-        # )
+        opa_scan_rules_bucket_name = ssm.StringParameter.from_string_parameter_name(
+            self, "bucket-url-ssm-param", general_config["parameter_name"]["opa_scan_rules_bucket"]
+        )
+        opa_scan_lambda_arn = ssm.StringParameter.from_string_parameter_name(
+            self, "lambda-arn-ssm-param", general_config["parameter_name"]["opa-scan-lambda"]
+        )
 
         validate_stage = pipeline.add_stage("validate")
         validate_stage.add_actions(
@@ -171,12 +171,12 @@ class CICDPipelineStack(cdk.Stack):
                 input=source_artifact,
                 type=codepipeline_actions.CodeBuildActionType.TEST,
             ),
-            # codepipeline_actions.LambdaInvokeAction(
-            #     action_name="opa-scan",
-            #     inputs=[cloud_assembly_artifact],
-            #     lambda_=lambda_.Function.from_function_arn(self, "opa-scan-lambda", opa_scan_lambda_arn.string_value),
-            #     user_parameters={"Rules": [f"s3://{opa_scan_rules_bucket_name.string_value}/cloudformation"]},
-            # ),
+            codepipeline_actions.LambdaInvokeAction(
+                action_name="opa-scan",
+                inputs=[cloud_assembly_artifact],
+                lambda_=lambda_.Function.from_function_arn(self, "opa-scan-lambda", opa_scan_lambda_arn.string_value),
+                user_parameters={"Rules": [f"s3://{opa_scan_rules_bucket_name.string_value}/cloudformation"]},
+            ),
         )
 
         if is_development_pipeline:

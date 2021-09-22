@@ -37,11 +37,9 @@ is_improperly_tagged(resource) = msg {
 rule[r] {
    resource = taggable_resources[key]
    msg = is_improperly_tagged(resource)
-   rs = utils.parse_cf_resource(resource, key)
-   r = utils.deny_resource_with_message(rs, msg)
+   r = utils.deny_resource_with_message(resource, msg)
 } {
    resource = taggable_resources[key]
    not is_improperly_tagged(resource)
-   rs = utils.parse_cf_resource(resource, key)
-   r = utils.allow_resource(rs)
+   r = utils.allow_resource(resource)
 }

@@ -16,13 +16,11 @@ has_not_encryption(resource, key) = msg {
 } 
 
 rule[r] {
-   resource = buckets[id]
-   msg = has_not_encryption(resource, id)
-   rs = utils.parse_cf_resource(resource, id)
-   r = utils.deny_resource_with_message(rs, msg)
+  resource = buckets[id]
+  msg = has_not_encryption(resource, id)
+  r = utils.deny_resource_with_message(resource, msg)
 } {
    resource = buckets[id]
    is_encrypted(resource)
-   rs = utils.parse_cf_resource(resource, id)
-   r = utils.allow_resource(rs)
+   r = utils.allow_resource(resource)
 }
