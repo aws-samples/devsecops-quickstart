@@ -12,6 +12,18 @@ class OPAScanStack(cdk.Stack):
 
         super().__init__(scope, id, **kwargs)
 
+        lambda_role = iam.Role(
+            self,
+            "opa-scan-lambda-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+        )
+
+        lambda_role.add_managed_policy(
+            iam.ManagedPolicy.from_managed_policy_arn(
+                self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+            )
+        )
+
         rules_bucket = s3.Bucket(
             self,
             id="opa-scan-rules-bucket",
@@ -28,17 +40,14 @@ class OPAScanStack(cdk.Stack):
             memory_limit=128,
         )
 
-        lambda_role = iam.Role(
-            self,
-            "opa-scan-lambda-role",
-            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
-        )
-
-        lambda_role.add_managed_policy(
-            iam.ManagedPolicy.from_managed_policy_arn(
-                self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-            )
-        )
+        rules_bucket.add_to_resource_policy(iam.PolicyStatement(
+            actions=["s3:List*", "s3:GetObject*", "s3:GetBucket*"],
+            resources=[
+                rules_bucket.bucket_arn,
+                f"{rules_bucket.bucket_arn}/*",
+            ],
+            principals=[iam.ArnPrincipal(lambda_role.role_arn)],
+        ))
 
         # lambda_role.add_managed_policy(
         #     iam.ManagedPolicy.from_managed_policy_arn(
