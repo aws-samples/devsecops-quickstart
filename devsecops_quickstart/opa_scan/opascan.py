@@ -40,20 +40,16 @@ class OPAScanStack(cdk.Stack):
             memory_limit=128,
         )
 
-        rules_bucket.add_to_resource_policy(iam.PolicyStatement(
-            actions=["s3:List*", "s3:GetObject*", "s3:GetBucket*"],
-            resources=[
-                rules_bucket.bucket_arn,
-                f"{rules_bucket.bucket_arn}/*",
-            ],
-            principals=[iam.ArnPrincipal(lambda_role.role_arn)],
-        ))
-
-        # lambda_role.add_managed_policy(
-        #     iam.ManagedPolicy.from_managed_policy_arn(
-        #         self, "codepipeline-full-access", "arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess"
-        #     )
-        # )
+        rules_bucket.add_to_resource_policy(
+            iam.PolicyStatement(
+                actions=["s3:List*", "s3:GetObject*", "s3:GetBucket*"],
+                resources=[
+                    rules_bucket.bucket_arn,
+                    f"{rules_bucket.bucket_arn}/*",
+                ],
+                principals=[iam.ArnPrincipal(lambda_role.role_arn)],
+            )
+        )
 
         handler = lambda_go.GoFunction(
             self,
