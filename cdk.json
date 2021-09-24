@@ -26,7 +26,8 @@
         },
         "parameter_name": {
           "opa_scan_rules_bucket": "opa-scan-rules-bucket-name",
-          "opa-scan-lambda": "opa-scan-lambda-arn"
+          "opa_scan_lambda_arn": "opa-scan-lambda-arn",
+          "opa_scan_role_arn": "opa-scan-role-arn"
         }
       },
       "stage": {

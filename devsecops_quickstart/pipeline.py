@@ -150,11 +150,33 @@ class CICDPipelineStack(cdk.Stack):
             ),
         )
 
-        opa_scan_rules_bucket_name = ssm.StringParameter.from_string_parameter_name(
-            self, "bucket-url-ssm-param", general_config["parameter_name"]["opa_scan_rules_bucket"]
+        opa_scan_rules_bucket_name = ssm.StringParameter.value_from_lookup(
+            self, parameter_name=general_config["parameter_name"]["opa_scan_rules_bucket"]
         )
-        opa_scan_lambda_arn = ssm.StringParameter.from_string_parameter_name(
-            self, "lambda-arn-ssm-param", general_config["parameter_name"]["opa-scan-lambda"]
+        opa_scan_lambda_arn = ssm.StringParameter.value_from_lookup(
+            self, parameter_name=general_config["parameter_name"]["opa_scan_lambda_arn"]
+        )
+        opa_scan_role_arn = ssm.StringParameter.value_from_lookup(
+            self, parameter_name=general_config["parameter_name"]["opa_scan_role_arn"]
+        )
+
+        pipeline.code_pipeline.artifact_bucket.add_to_resource_policy(
+            iam.PolicyStatement(
+                actions=["s3:List*", "s3:GetObject*", "s3:GetBucket*"],
+                resources=[
+                    pipeline.code_pipeline.artifact_bucket.bucket_arn,
+                    f"{pipeline.code_pipeline.artifact_bucket.bucket_arn}/*",
+                ],
+                principals=[iam.ArnPrincipal(opa_scan_role_arn)],
+            )
+        )
+
+        pipeline.code_pipeline.artifact_bucket.encryption_key.add_to_resource_policy(
+            iam.PolicyStatement(
+                actions=["kms:Decrypt", "kms:DescribeKey"],
+                resources=["*"],
+                principals=[iam.ArnPrincipal(opa_scan_role_arn)],
+            )
         )
 
         validate_stage = pipeline.add_stage("validate")
@@ -174,8 +196,8 @@ class CICDPipelineStack(cdk.Stack):
             codepipeline_actions.LambdaInvokeAction(
                 action_name="opa-scan",
                 inputs=[cloud_assembly_artifact],
-                lambda_=lambda_.Function.from_function_arn(self, "opa-scan-lambda", opa_scan_lambda_arn.string_value),
-                user_parameters={"Rules": [f"s3://{opa_scan_rules_bucket_name.string_value}/cloudformation"]},
+                lambda_=lambda_.Function.from_function_arn(self, "opa-scan-lambda", opa_scan_lambda_arn),
+                user_parameters={"Rules": [f"s3://{opa_scan_rules_bucket_name}/cloudformation"]},
             ),
         )
 
@@ -207,3 +229,5 @@ class CICDPipelineStack(cdk.Stack):
                     ),
                 )
             )
+
+        cdk.CfnOutput(self, "pipeline-artifact-bucket", value=pipeline.code_pipeline.artifact_bucket.bucket_name)

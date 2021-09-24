@@ -1,0 +1,10 @@
+{
+  "availability-zones:account=911685872277:region=eu-central-1": [
+    "eu-central-1a",
+    "eu-central-1b",
+    "eu-central-1c"
+  ],
+  "ssm:account=911685872277:parameterName=opa-scan-rules-bucket-name:region=eu-central-1": "opa-scan-rules-911685872277",
+  "ssm:account=911685872277:parameterName=opa-scan-lambda-arn:region=eu-central-1": "arn:aws:lambda:eu-central-1:911685872277:function:devsecops-quickstart-opa-scan-opascan50488AA1-l5aHCyRVUqgU",
+  "ssm:account=911685872277:parameterName=opa-scan-role-arn:region=eu-central-1": "arn:aws:iam::911685872277:role/devsecops-quickstart-opa-opascanlambdarole96535AD-1OG6HO7G77L2D"
+}
