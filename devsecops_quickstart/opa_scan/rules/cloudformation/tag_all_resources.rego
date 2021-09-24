@@ -31,7 +31,7 @@ is_tagged(resource) {
 
 is_improperly_tagged(resource) = msg {
    not is_tagged(resource)
-   msg = "Not Tags Found"
+   msg = "No Tags Found"
 }
 
 rule[r] {

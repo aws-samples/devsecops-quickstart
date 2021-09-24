@@ -5,6 +5,7 @@ import aws_cdk.aws_iam as iam
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_s3_deployment as s3_deployment
 import aws_cdk.aws_ssm as ssm
+import aws_cdk.aws_kms as kms
 
 
 class OPAScanStack(cdk.Stack):
@@ -17,10 +18,26 @@ class OPAScanStack(cdk.Stack):
             "opa-scan-lambda-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
         )
-
         lambda_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
                 self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+            )
+        )
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["codepipeline:PutJobSuccessResult", "codepipeline:PutJobFailureResult"],
+                resources=["*"],
+            )
+        )
+
+        encryption_key = kms.Key(self, "opa-scan-rules-key")
+        encryption_key.add_to_resource_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["kms:Decrypt", "kms:DescribeKey"],
+                resources=["*"],
+                principals=[iam.ArnPrincipal(lambda_role.role_arn)],
             )
         )
 
@@ -30,7 +47,11 @@ class OPAScanStack(cdk.Stack):
             bucket_name=f"opa-scan-rules-{self.account}",
             removal_policy=cdk.RemovalPolicy.DESTROY,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            encryption=s3.BucketEncryption.KMS,
+            encryption_key=encryption_key,
         )
+
+        cdk.Tags.of(rules_bucket).add("resource-owner", "opa-scan")
 
         s3_deployment.BucketDeployment(
             self,

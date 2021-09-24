@@ -3,23 +3,17 @@ package main
 import (
 	"context"
 	"devsecops-quickstart/opa-scan/pkg/app"
-	"devsecops-quickstart/opa-scan/pkg/filesystem"
 	"encoding/json"
-	"flag"
 	"fmt"
-	"log"
-	"os"
-	"strings"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/codepipeline"
+	"github.com/aws/aws-sdk-go-v2/service/codepipeline/types"
 )
 
 type MyEvent struct {
-	Input           string          `json:"input"`
-	Rules           []string        `json:"rules"`
 	Parameters      string          `json:"parameters"`
 	CodePipelineJob CodePipelineJob `json:"CodePipeline.job"`
 }
@@ -96,111 +90,93 @@ type CodePipelineArtifactCredentials struct {
 }
 
 func HandleLambdaRequest(ctx context.Context, event MyEvent) (string, error) {
-	fmt.Print("Handler started!")
+	fmt.Println("Handler started!")
 
-	output := make(map[string]string)
-	var err error
-	var codePipelineJob CodePipelineJob
+	// WARNING: Uncomment only for testing/debugging purposes, as the event contains temporary credentials
+	// passed from pipeline to lambda
+	// eventJson, _ := json.Marshal(event)
+	// fmt.Println("Event received: " + string(eventJson))
 
-	// Read event from CodePipeline
-	if event.CodePipelineJob.ID != "" {
-		codePipelineJob = event.CodePipelineJob
-		event = PrepareCodePipelineRequest(codePipelineJob)
+	codePipelineJob := event.CodePipelineJob
+	jobJson, _ := json.Marshal(codePipelineJob)
+	fmt.Println("CodePipeline Job: " + string(jobJson))
+
+	userParameters := codePipelineJob.Data.ActionConfiguration.Configuration.UserParameters
+	var parameters CodePipelineParameters
+	err := json.Unmarshal([]byte(userParameters), &parameters)
+
+	if err != nil {
+		return "", err
 	}
 
-	// Run OpaScan
-	output["scan_result"] = run(ctx, event)
+	inputArtifact := codePipelineJob.Data.InputArtifacts[0].Location.S3Location
 
-	// CodePipeline result
-	if codePipelineJob.ID != "" {
-		_, err = PutCodePipelineResult(ctx, codePipelineJob, output)
-		if err != nil {
-			log.Fatal(err)
+	c := app.New(parameters.Rules, event.Parameters)
+	result, err := c.Eval(ctx, "s3://" + inputArtifact.BucketName + "/" + inputArtifact.ObjectKey)
+	if err != nil {
+		return "", err
+	}
+
+	resultJson, err := json.Marshal(result)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println("Evaluation result: " + string(resultJson))
+
+	return PutCodePipelineResult(ctx, codePipelineJob, result)
+}
+
+func PutCodePipelineResult(ctx context.Context, job CodePipelineJob, result app.ColomboResult) (string, error) {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return "", err
+	}
+
+	svc := codepipeline.NewFromConfig(cfg)
+
+	var failedRules []app.RuleResult
+	for _, ruleResult := range result.Rules {
+		if ruleResult.Valid == "false" {
+			failedRules = append(failedRules, ruleResult)
 		}
 	}
 
-	return output["scan_result"], err
-}
+	if len(failedRules) > 0 {
+		failedJson, err := json.Marshal(failedRules)
+		if err != nil {
+			return "", err
+		}
 
-func PrepareCodePipelineRequest(job CodePipelineJob) (request MyEvent) {
-	fmt.Println("CodePipeline Job ID: " + job.ID)
+		fmt.Println("Marking job as failure due to the non-compliant resources: " + string(failedJson))
 
-	userParameters := job.Data.ActionConfiguration.Configuration.UserParameters
-	input := job.Data.InputArtifacts[0].Location.S3Location
+		_, err = svc.PutJobFailureResult(context.Background(), &codepipeline.PutJobFailureResultInput{
+			JobId: aws.String(job.ID),
+			FailureDetails: &types.FailureDetails{
+				Message: aws.String(string(failedJson)),
+				Type:    types.FailureTypeJobFailed,
+			},
+		})
 
-	var parameters CodePipelineParameters
-	json.Unmarshal([]byte(userParameters), &parameters)
-
-	request = MyEvent{
-		Rules: parameters.Rules,
-		Input: "s3://" + input.BucketName + "/" + input.ObjectKey,
+		if err != nil {
+			return "", err
+		}
+		return "Marked job" + job.ID + " as failure.", nil
 	}
 
-	return request
-}
-
-func PutCodePipelineResult(ctx context.Context, job CodePipelineJob, output map[string]string) (*codepipeline.PutJobSuccessResultOutput, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
-	}
-	svc := codepipeline.NewFromConfig(cfg)
-
-	// Upload output to S3
-	fs := filesystem.NewFilesystem("s3")
-	outputLocaltion := map[string]string{
-		"bucket": job.Data.OutPutArtifacts[0].Location.S3Location.BucketName,
-		"key":    job.Data.OutPutArtifacts[0].Location.S3Location.ObjectKey,
-	}
-	fmt.Println("Uploading artifact output to S3....")
-	fmt.Println(outputLocaltion)
-	fs.Write(outputLocaltion, output["scan_result"])
-
-	result, err := svc.PutJobSuccessResult(context.Background(), &codepipeline.PutJobSuccessResultInput{
+	_, err = svc.PutJobSuccessResult(context.Background(), &codepipeline.PutJobSuccessResultInput{
 		JobId:           aws.String(job.ID),
-		OutputVariables: output,
 	})
 
-	return result, err
-}
-
-func run(ctx context.Context, event MyEvent) string {
-	fmt.Println("Event:")
-	fmt.Println(event)
-	// Crear App instance
-	c := app.New(event.Rules, event.Parameters)
-	rs, err := c.Eval(ctx, event.Input)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	data, _ := json.Marshal(rs)
-
-	fmt.Println(string(data))
-	return string(data)
+	fmt.Println("Marking job as success, all resources are compliant.")
+	return "Marked job" + job.ID +  " as success.", nil
 }
 
 func main() {
 	fmt.Println("Running OpaScan.....")
-
-	if os.Getenv("RUN_ON_LAMBDA") == "True" {
-		fmt.Print("Running on Lambda!")
-		lambda.Start(HandleLambdaRequest)
-	} else {
-		ctx := context.Background()
-		input := flag.String("input", os.Getenv("INPUT"), "Input File/Folder")
-		rules := flag.String("rules", os.Getenv("RULES"), "List of rego rules path")
-		parameters := flag.String("parameters", os.Getenv("PARAMETERS"), "CF variables")
-
-		flag.Parse()
-
-		event := MyEvent{
-			Input:      *input,
-			Rules:      strings.Split(*rules, ","),
-			Parameters: *parameters,
-		}
-
-		// Run OpaScan
-		run(ctx, event)
-	}
+	lambda.Start(HandleLambdaRequest)
 }

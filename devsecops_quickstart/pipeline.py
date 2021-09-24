@@ -88,6 +88,8 @@ class CICDPipelineStack(cdk.Stack):
             ),
         )
 
+        cdk.Tags.of(pipeline.code_pipeline.artifact_bucket).add("resource-owner", "pipeline")
+
         bandit_project = codebuild.PipelineProject(
             self,
             "Bandit",
@@ -162,6 +164,7 @@ class CICDPipelineStack(cdk.Stack):
 
         pipeline.code_pipeline.artifact_bucket.add_to_resource_policy(
             iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
                 actions=["s3:List*", "s3:GetObject*", "s3:GetBucket*"],
                 resources=[
                     pipeline.code_pipeline.artifact_bucket.bucket_arn,
@@ -173,6 +176,7 @@ class CICDPipelineStack(cdk.Stack):
 
         pipeline.code_pipeline.artifact_bucket.encryption_key.add_to_resource_policy(
             iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
                 actions=["kms:Decrypt", "kms:DescribeKey"],
                 resources=["*"],
                 principals=[iam.ArnPrincipal(opa_scan_role_arn)],
