@@ -28,7 +28,6 @@ class OPAScanStack(cdk.Stack):
             memory_limit=128,
         )
 
-        # TODO restrict access
         lambda_role = iam.Role(
             self,
             "opa-scan-lambda-role",
@@ -37,21 +36,15 @@ class OPAScanStack(cdk.Stack):
 
         lambda_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
-                self, "s3-full-access", "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-            )
-        )
-
-        lambda_role.add_managed_policy(
-            iam.ManagedPolicy.from_managed_policy_arn(
-                self, "codepipeline-full-access", "arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess"
-            )
-        )
-
-        lambda_role.add_managed_policy(
-            iam.ManagedPolicy.from_managed_policy_arn(
                 self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
             )
         )
+
+        # lambda_role.add_managed_policy(
+        #     iam.ManagedPolicy.from_managed_policy_arn(
+        #         self, "codepipeline-full-access", "arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess"
+        #     )
+        # )
 
         handler = lambda_go.GoFunction(
             self,
@@ -74,6 +67,13 @@ class OPAScanStack(cdk.Stack):
         ssm.StringParameter(
             self,
             "lambda-arn-ssm-param",
-            parameter_name=general_config["parameter_name"]["opa-scan-lambda"],
+            parameter_name=general_config["parameter_name"]["opa_scan_lambda_arn"],
             string_value=handler.function_arn,
+        )
+
+        ssm.StringParameter(
+            self,
+            "role-arn-ssm-param",
+            parameter_name=general_config["parameter_name"]["opa_scan_role_arn"],
+            string_value=lambda_role.role_arn,
         )

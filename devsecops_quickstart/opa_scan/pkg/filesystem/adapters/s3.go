@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"devsecops-quickstart/opa-scan/pkg/utils"
 	"errors"
@@ -94,12 +95,15 @@ func (a S3Addapter) Read(filePath string, experesion string, walk bool) ([]utils
 	}
 
 	for _, item := range resp.Contents {
-		if err == nil && libRegEx.MatchString(*item.Key) {
-			file, err := a.readContent(u.Host, *item.Key)
-			if err != nil {
-				return inputFiles, err
+		files, err := a.readContent(u.Host, *item.Key)
+		if err != nil {
+			return inputFiles, err
+		}
+
+		for _, file := range files {
+			if libRegEx.MatchString(file.FilePath) {
+				inputFiles = append(inputFiles, file)
 			}
-			inputFiles = append(inputFiles, file)
 		}
 	}
 
@@ -110,43 +114,53 @@ func (a S3Addapter) Read(filePath string, experesion string, walk bool) ([]utils
 	return inputFiles, nil
 }
 
-func (a S3Addapter) readContent(bucket string, key string) (utils.File, error) {
+func (a S3Addapter) readContent(bucket string, key string) ([]utils.File, error) {
 	ctx := context.Background()
 	req, err := a.s3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return utils.File{}, err
+		return []utils.File{}, err
 	}
 
 	s3objectBytes, err := ioutil.ReadAll(req.Body)
-
-	file := utils.File{
-		Type:     "S3",
-		FilePath: "s3://" + bucket + "/" + key,
-		Data:     string(s3objectBytes),
+	if err != nil {
+		return []utils.File{}, err
 	}
 
-	return file, nil
+	if *req.ContentType != "application/zip" {
+		file := utils.File{
+			Type:     "S3",
+			FilePath: "s3://" + bucket + "/" + key,
+			Data:     string(s3objectBytes),
+		}
 
-	/*zipReader, err := zip.NewReader(bytes.NewReader(s3objectBytes), int64(len(s3objectBytes)))
-	//If err is not nil, it's because is not a zip file.
+		return []utils.File{file}, nil
+	}
+
+	zipReader, err := zip.NewReader(bytes.NewReader(s3objectBytes), int64(len(s3objectBytes)))
 	if err != nil {
-		return string(s3objectBytes), nil
+		return []utils.File{}, err
 	}
 
 	// Read all the files from zip archive
-	//TODO improve this
+	files := []utils.File{}
 	for _, zipFile := range zipReader.File {
-		foo, err := readZipFile(zipFile)
+		zipFileBytes, err := readZipFile(zipFile)
 		if err != nil {
-			return string(s3objectBytes), err
+			return []utils.File{}, err
 		}
-		s3objectBytes = foo
+
+		file := utils.File{
+			Type:     "S3",
+			FilePath: "s3://" + bucket + "/" + key + "/" + zipFile.FileHeader.Name,
+			Data:     string(zipFileBytes),
+		}
+		files = append(files, file)
 	}
 
-	return string(s3objectBytes), nil*/
+	return files, nil
 }
 
 func readZipFile(zf *zip.File) ([]byte, error) {

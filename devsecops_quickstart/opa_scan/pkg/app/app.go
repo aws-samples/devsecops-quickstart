@@ -119,6 +119,7 @@ func (c Colombo) getRules() (map[string]string, error) {
 			return rules, err
 		}
 		for _, v := range rulesPath {
+			fmt.Println("Loaded rule: " + v.FilePath)
 			rules[v.FilePath] = v.Data
 		}
 	}
@@ -132,12 +133,13 @@ func (c Colombo) readInputContent(path string) ([]utils.InputFile, error) {
 	inputFilesJSON := []utils.InputFile{}
 
 	fs := filesystem.NewFilesystemByPath(path)
-	inputFiles, err := fs.Read(path, "^.+\\.(json)$", true)
+	inputFiles, err := fs.Read(path, "^.+\\.(template).(json)$", true)
 	if err != nil {
 		return inputFilesJSON, err
 	}
 
 	for _, v := range inputFiles {
+		fmt.Println("Loaded input: " + v.FilePath)
 		var data map[string]interface{}
 		json.Unmarshal([]byte(v.Data), &data)
 		inputFilesJSON = append(inputFilesJSON, utils.InputFile{
