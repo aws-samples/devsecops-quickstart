@@ -19,11 +19,17 @@ class CfnNag(cdk.Stack):
             )
         )
 
-        lambda_policy = iam.Policy(self, "lambda-role-policy", statements=[iam.PolicyStatement(
-            effect=iam.Effect.ALLOW,
-            actions=["codepipeline:PutJobSuccessResult", "codepipeline:PutJobFailureResult"],
-            resources=["*"],
-        )])
+        lambda_policy = iam.Policy(
+            self,
+            "lambda-role-policy",
+            statements=[
+                iam.PolicyStatement(
+                    effect=iam.Effect.ALLOW,
+                    actions=["codepipeline:PutJobSuccessResult", "codepipeline:PutJobFailureResult"],
+                    resources=["*"],
+                )
+            ],
+        )
 
         cfn_policy = lambda_policy.node.default_child
         cfn_policy.cfn_options.metadata = {
