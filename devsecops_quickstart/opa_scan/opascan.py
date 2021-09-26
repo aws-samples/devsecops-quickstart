@@ -24,6 +24,23 @@ class OPAScanStack(cdk.Stack):
             )
         )
 
+        lambda_policy = iam.Policy(self, "lambda-role-policy", statements=[iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=["codepipeline:PutJobSuccessResult", "codepipeline:PutJobFailureResult"],
+            resources=["*"],
+        )])
+
+        cfn_policy = lambda_policy.node.default_child
+        cfn_policy.cfn_options.metadata = {
+            "cfn_nag": {
+                "rules_to_suppress": [
+                    {"id": "W12", "reason": ""},
+                ]
+            }
+        }
+
+        lambda_policy.attach_to_role(lambda_role)
+
         encryption_key = kms.Key(self, "opa-scan-rules-key")
         encryption_key.add_to_resource_policy(
             iam.PolicyStatement(
