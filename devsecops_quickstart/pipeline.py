@@ -158,10 +158,27 @@ class CICDPipelineStack(cdk.Stack):
         )
         opa_scan_lambda_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=opa_scan_params["lambda_arn"])
         opa_scan_role_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=opa_scan_params["role_arn"])
+        opa_scan_role = iam.Role.from_role_arn(self, "opa-scan-role", role_arn=opa_scan_role_arn)
+        opa_scan_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["codepipeline:PutJobSuccessResult", "codepipeline:PutJobFailureResult"],
+                resources=[pipeline.code_pipeline.pipeline_arn],
+            )
+        )
 
         cfn_nag_params = general_config["parameter_name"]["cfn_nag"]
         cfn_nag_lambda_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=cfn_nag_params["lambda_arn"])
         cfn_nag_role_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=cfn_nag_params["role_arn"])
+
+        cfn_nag_role = iam.Role.from_role_arn(self, "cfn-nag-role", role_arn=cfn_nag_role_arn)
+        cfn_nag_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["codepipeline:PutJobSuccessResult", "codepipeline:PutJobFailureResult"],
+                resources=[pipeline.code_pipeline.pipeline_arn],
+            )
+        )
 
         pipeline.code_pipeline.artifact_bucket.add_to_resource_policy(
             iam.PolicyStatement(

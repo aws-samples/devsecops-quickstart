@@ -23,13 +23,6 @@ class OPAScanStack(cdk.Stack):
                 self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
             )
         )
-        lambda_role.add_to_policy(
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                actions=["codepipeline:PutJobSuccessResult", "codepipeline:PutJobFailureResult"],
-                resources=["*"],
-            )
-        )
 
         encryption_key = kms.Key(self, "opa-scan-rules-key")
         encryption_key.add_to_resource_policy(
