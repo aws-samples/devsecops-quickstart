@@ -13,6 +13,18 @@ class CfnNag(cdk.Stack):
         super().__init__(scope, id, **kwargs)
 
         lambda_role = iam.Role(self, "cfn-nag-role", assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"))
+        lambda_role.add_managed_policy(
+            iam.ManagedPolicy.from_managed_policy_arn(
+                self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+            )
+        )
+        lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["codepipeline:PutJobSuccessResult", "codepipeline:PutJobFailureResult"],
+                resources=["*"],
+            )
+        )
 
         encryption_key = kms.Key(self, "cfn-nag-rules-key")
         encryption_key.add_to_resource_policy(
