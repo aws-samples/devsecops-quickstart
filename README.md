@@ -1,9 +1,25 @@
 
-# Welcome to your CDK Python project!
+# DevSecOps Quick Start
 
-This is a blank project for Python development with CDK.
+This artefact helps development teams quickly set up a complete development environment following security and DevOps
+standards and best practices. Upon successful deployment, you'll have:
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+- an AWS CodeCommit repository 
+- an AWS Cloud9 development environment integrated with the code repository
+- a multi-stage, multi-account CI/CD pipeline integrated with the code repository  
+- pipeline integration with [Bandit](https://github.com/PyCQA/bandit) for finding common security issues in Python code 
+- pipeline integration with [Snyk](https://snyk.io/) for continuously monitoring for vulnerabilities in your dependencies
+- pipeline integration with [CFN NAG](https://github.com/stelligent/cfn_nag) to look for patterns in 
+  CloudFormation templates that may indicate insecure infrastructure
+- pipeline integration with [Open Policy Agent (OPA)](https://www.openpolicyagent.org/) that enables you define and
+  enforce policies on infrastructure resources at development time   
+
+![validate](./assets/validate.png)
+![cloud9](./assets/cloud9.png)
+![dev](./assets/dev.png)
+![qa](./assets/qa.png)
+![prod](./assets/prod.png)
+# Set Up
 
 This project is set up like a standard Python project.  The initialization
 process also creates a virtualenv within this project, stored under the `.venv`
@@ -37,8 +53,11 @@ Once the virtualenv is activated, you can install the required dependencies.
 $ pip install -r requirements.txt
 ```
 
-Update `cdk.json` witn account and region values for deployment of toolchain and Dev stacks. Optionally, 
-uncomment and update QA and Prod stages if you want to do multi-account deployments.
+# Bootstrap
+
+Update `cdk.json` with account number and region values to be used for toolchain, Dev, QA, and Prod deployments.
+The toolchain account will host all the required tools deployed by this quick start. The Dev/QA/Prod accounts will 
+be used as target accounts for deployment of your application(s).
 
 Bootstrap the toolchain account. You only need to do this one time per environment where you want 
 to deploy CDK applications.
@@ -65,71 +84,73 @@ $ cdk bootstrap \
   aws://<dev-account>/<dev-region>
 ```
 
-Repeat this step for your qa and prod accounts.
+Repeat this step for QA and Prod accounts. 
 
-At this point you can now synthesize the CloudFormation template for this code.
+# Deploy
+## Snyk
+For Snyk integration, you need to provide authentication token with a Snyk profile account. You can sign up for a
+free Snyk account [here](https://app.snyk.io/login?cta=sign-up&loc=body&page=try-snyk). After sign up, you can get
+your Auth Token from the Account Settings section in your profile.
 
-Run the following command to list all CDK apps defined.
-
-```
-$ cdk ls
-```
-
-Create new secret containing Snyk authentication token for snyk integration:
+Using the retrieved authentication token, use secret helper tool to securely store the authentication token 
+in AWS Secret Manager in the toolchain account to share it with the deployment pipeline:
 ```
 $ ./create_secret_helper.sh snyk-auth-token <snyk-auth-token-value>
 ```
 
-
-Deploy the AWS CodeCommit repository in the toolchain account. The repository name will be taken from 
-the `repository_name` config parameter in `cdk.json`.
-
-```
-$ cdk deploy devsecops-quickstart-repository --profile toolchain-profile
-```
-
-Take note of the `devsecops-quickstart-repository.RepositoryCloneURL` value in the deployment Outputs.
-
-Initiate git and commit to new repository.
-```
-$ git init
-$ git remote add origin https://git-codecommit.eu-west-1.amazonaws.com/v1/repos/devsecops-quickstart
-$ git checkout -b development
-$ git add .
-$ git commit -m "initial commit"
-$ git push --set-upstream origin development
-```
-
+## OPA Scan
 Run the following command to deploy OPA Scan stack into toolchain account.
 
 ```
 $ cdk deploy devsecops-quickstart-opa-scan --profile toolchain-profile
 ```
 
+## Cfn Nag
+Run the following command to deploy OPA Scan stack into toolchain account.
+
+```
+$ cdk deploy cdk deploy devsecops-quickstart-cfn-nag --profile toolchain-profile
+```
+
+## CI/CD Pipeline - Development
 Run the following command to deploy the development CI/CD pipeline. The development pipeline will track changes from
-`development_branch` as configured in `cdk.json`. 
+`development_branch` and deploys to Dev account as configured in `cdk.json`.
 
 ```
 $ cdk deploy devsecops-quickstart-cicd-development --profile toolchain-profile
 ```
 
+Take note of the `devsecops-quickstart-cicd-development.repositoryurl` value in the deployment outputs.
+
+Initiate git and commit to the new repository.
+```
+$ git init
+$ git remote add origin https://git-codecommit.eu-central-1.amazonaws.com/v1/repos/devsecops-quickstart
+$ git checkout -b development
+$ git add .
+$ git commit -m "initial commit"
+$ git push --set-upstream origin development
+```
+
+## CI/CD Pipeline - Production
 Run the following command to deploy the production CI/CD pipeline. The production pipeline will track changes from
-`production_branch` as configured in `cdk.json`.
+`production_branch` and deploys to QA and Prod account as configured in `cdk.json`.
 
 ```
 $ cdk deploy devsecops-quickstart-production --profile toolchain-profile
 ```
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
+# Troubleshooting
+#### Q: How to access the Cloud9 Environment?
+A: Check the CloudFormation Outputs section of the stack called `tooling-Cloud9`. There you can find output parameters
+for the environment URL, admin user, and the AWS Secret Manager secret containing the admin password.
 
-## Useful commands
+#### Q: Why does Cfn Nag invocation fail in the pipeline?
+A: When invoked from AWS Codepipeline, the Cfn Nag Lambda function expects the pipeline invocation to include a `string` 
+value for `User Parameters` that will be interpreted as a `glob` pattern by the lambda to identify the CloudFormation 
+templates for evaluation. AWS CDK construct for LambdaInvokeAction in the pipeline, however, expects a `map` object for 
+user parameters and does not allow providing bare `string` values. As a quick fix, you need to set this value directly
+in the console. The first time after the pipeline is deployed, edit the CodePipeline step for `cfn-nag` invocation and 
+set the user parameters value to be used. Use`**/*.template.json`, for example, to scan all AWS CDK synthesied stacks.
 
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
+![user_parameters](./assets/user_parameters.png)

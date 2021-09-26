@@ -17,12 +17,6 @@ class Cloud9Stack(cdk.Stack):
             repository_name=general_config["repository_name"],
         )
 
-        cdk.CfnOutput(
-            self,
-            "Repository_Clone_URL",
-            value=repository.repository_clone_url_http,
-        )
-
         secret = secretmanager.Secret(  # nosec
             self,
             id="cloud9_admin_password",
@@ -78,7 +72,7 @@ class Cloud9Stack(cdk.Stack):
         cloud9_admin_user.node.default_child.cfn_options.metadata = {
             "cfn_nag": {
                 "rules_to_suppress": [
-                    {"id": "F2000", "reason": ""},
+                    {"id": "F2000", "reason": "Single user for Cloud9 admin"},
                 ]
             }
         }

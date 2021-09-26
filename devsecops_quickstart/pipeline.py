@@ -46,6 +46,8 @@ class CICDPipelineStack(cdk.Stack):
                 repository_name=general_config["repository_name"],
             )
 
+        cdk.CfnOutput(self, "repository-url", value=repository.repository_clone_url_http)
+
         # Defines the artifact representing the sourcecode
         source_artifact = codepipeline.Artifact()
 
@@ -247,7 +249,7 @@ class CICDPipelineStack(cdk.Stack):
         pipeline.code_pipeline.artifact_bucket.encryption_key.node.default_child.cfn_options.metadata = {
             "cfn_nag": {
                 "rules_to_suppress": [
-                    {"id": "F19", "reason": ""},
+                    {"id": "F19", "reason": "CDK Generated Resource for Pipeline Artifacts"},
                 ]
             }
         }

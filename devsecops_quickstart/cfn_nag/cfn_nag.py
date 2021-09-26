@@ -35,7 +35,7 @@ class CfnNag(cdk.Stack):
         cfn_policy.cfn_options.metadata = {
             "cfn_nag": {
                 "rules_to_suppress": [
-                    {"id": "W12", "reason": ""},
+                    {"id": "W12", "reason": "Circular dependency, pipeline is not deployed yet"},
                 ]
             }
         }
