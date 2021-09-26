@@ -152,15 +152,16 @@ class CICDPipelineStack(cdk.Stack):
             ),
         )
 
+        opa_scan_params = general_config["parameter_name"]["opa_scan"]
         opa_scan_rules_bucket_name = ssm.StringParameter.value_from_lookup(
-            self, parameter_name=general_config["parameter_name"]["opa_scan_rules_bucket"]
+            self, parameter_name=opa_scan_params["rules_bucket"]
         )
-        opa_scan_lambda_arn = ssm.StringParameter.value_from_lookup(
-            self, parameter_name=general_config["parameter_name"]["opa_scan_lambda_arn"]
-        )
-        opa_scan_role_arn = ssm.StringParameter.value_from_lookup(
-            self, parameter_name=general_config["parameter_name"]["opa_scan_role_arn"]
-        )
+        opa_scan_lambda_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=opa_scan_params["lambda_arn"])
+        opa_scan_role_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=opa_scan_params["role_arn"])
+
+        cfn_nag_params = general_config["parameter_name"]["cfn_nag"]
+        cfn_nag_lambda_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=cfn_nag_params["lambda_arn"])
+        cfn_nag_role_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=cfn_nag_params["role_arn"])
 
         pipeline.code_pipeline.artifact_bucket.add_to_resource_policy(
             iam.PolicyStatement(
@@ -170,7 +171,7 @@ class CICDPipelineStack(cdk.Stack):
                     pipeline.code_pipeline.artifact_bucket.bucket_arn,
                     f"{pipeline.code_pipeline.artifact_bucket.bucket_arn}/*",
                 ],
-                principals=[iam.ArnPrincipal(opa_scan_role_arn)],
+                principals=[iam.ArnPrincipal(opa_scan_role_arn), iam.ArnPrincipal(cfn_nag_role_arn)],
             )
         )
 
@@ -179,7 +180,7 @@ class CICDPipelineStack(cdk.Stack):
                 effect=iam.Effect.ALLOW,
                 actions=["kms:Decrypt", "kms:DescribeKey"],
                 resources=["*"],
-                principals=[iam.ArnPrincipal(opa_scan_role_arn)],
+                principals=[iam.ArnPrincipal(opa_scan_role_arn), iam.ArnPrincipal(cfn_nag_role_arn)],
             )
         )
 
@@ -202,6 +203,11 @@ class CICDPipelineStack(cdk.Stack):
                 inputs=[cloud_assembly_artifact],
                 lambda_=lambda_.Function.from_function_arn(self, "opa-scan-lambda", opa_scan_lambda_arn),
                 user_parameters={"Rules": [f"s3://{opa_scan_rules_bucket_name}/cloudformation"]},
+            ),
+            codepipeline_actions.LambdaInvokeAction(
+                action_name="cfn-nag",
+                inputs=[cloud_assembly_artifact],
+                lambda_=lambda_.Function.from_function_arn(self, "cfn-nag-lambda", cfn_nag_lambda_arn),
             ),
         )
 

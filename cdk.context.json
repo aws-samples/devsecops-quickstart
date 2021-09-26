@@ -6,5 +6,7 @@
   ],
   "ssm:account=911685872277:parameterName=opa-scan-rules-bucket-name:region=eu-central-1": "opa-scan-rules-911685872277",
   "ssm:account=911685872277:parameterName=opa-scan-lambda-arn:region=eu-central-1": "arn:aws:lambda:eu-central-1:911685872277:function:devsecops-quickstart-opa-scan-opascan50488AA1-l5aHCyRVUqgU",
-  "ssm:account=911685872277:parameterName=opa-scan-role-arn:region=eu-central-1": "arn:aws:iam::911685872277:role/devsecops-quickstart-opa-opascanlambdarole96535AD-1OG6HO7G77L2D"
+  "ssm:account=911685872277:parameterName=opa-scan-role-arn:region=eu-central-1": "arn:aws:iam::911685872277:role/devsecops-quickstart-opa-opascanlambdarole96535AD-1OG6HO7G77L2D",
+  "ssm:account=911685872277:parameterName=cfn-nag-lambda-arn:region=eu-central-1": "arn:aws:lambda:eu-central-1:911685872277:function:cfn-nag",
+  "ssm:account=911685872277:parameterName=cfn-nag-role-arn:region=eu-central-1": "arn:aws:iam::911685872277:role/devsecops-quickstart-cfn-nag-cfnnagrole47C1D73E-1AAS3XBNLE9H2"
 }
