@@ -47,7 +47,7 @@ class OPAScanStack(cdk.Stack):
 
         lambda_policy.attach_to_role(lambda_role)
 
-        encryption_key = kms.Key(self, "opa-scan-rules-key")
+        encryption_key = kms.Key(self, "opa-scan-rules-key", enable_key_rotation=True)
         encryption_key.add_to_resource_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
