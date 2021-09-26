@@ -233,6 +233,7 @@ class CICDPipelineStack(cdk.Stack):
             stage_config = stage_config_item[1]
 
             pipeline.add_application_stage(
+                manual_approvals=stage_config["manual_approvals"],
                 app_stage=SampleAppStage(
                     self,
                     stage=stage,
