@@ -244,3 +244,10 @@ class CICDPipelineStack(cdk.Stack):
             )
 
         cdk.CfnOutput(self, "pipeline-artifact-bucket", value=pipeline.code_pipeline.artifact_bucket.bucket_name)
+        pipeline.code_pipeline.artifact_bucket.encryption_key.node.default_child.cfn_options.metadata = {
+            "cfn_nag": {
+                "rules_to_suppress": [
+                    {"id": "F19", "reason": ""},
+                ]
+            }
+        }

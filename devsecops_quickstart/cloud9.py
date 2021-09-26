@@ -74,3 +74,11 @@ class Cloud9Stack(cdk.Stack):
         )
 
         cdk.CfnOutput(self, "Cloud9_IDE_URL", value=ide_url)
+
+        cloud9_admin_user.node.default_child.cfn_options.metadata = {
+            "cfn_nag": {
+                "rules_to_suppress": [
+                    {"id": "F2000", "reason": ""},
+                ]
+            }
+        }
