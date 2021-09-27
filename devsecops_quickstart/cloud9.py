@@ -44,8 +44,6 @@ class Cloud9Stack(cdk.Stack):
                 managed_policy_arn="arn:aws:iam::aws:policy/AWSCodeCommitFullAccess",
             )
         )
-        cdk.CfnOutput(self, "Cloud9_Admin_User", value=cloud9_admin_user.user_arn)
-        cdk.CfnOutput(self, "Cloud9_admin_Password_Secret", value=secret.secret_arn)
 
         vpc = ec2.Vpc(self, "Cloud9-VPC", max_azs=3)
 
@@ -64,10 +62,19 @@ class Cloud9Stack(cdk.Stack):
         )
 
         ide_url = "https://{region}.console.aws.amazon.com/cloud9/ide/{id}".format(
-            region={general_config["toolchain_region"]}, id=cloud9_environment.ref
+            region=general_config["toolchain_region"], id=cloud9_environment.ref
         )
 
-        cdk.CfnOutput(self, "Cloud9_IDE_URL", value=ide_url)
+        secret_url = (
+            "https://{region}.console.aws.amazon.com/secretsmanager/home?region={region}#!/secret?name={secret}".format(
+                region=general_config["toolchain_region"], secret=secret.secret_name
+            )
+        )
+
+        cdk.CfnOutput(self, "IDE_Account", value=general_config["toolchain_account"])
+        cdk.CfnOutput(self, "IDE_URL", value=ide_url)
+        cdk.CfnOutput(self, "Admin_User_Name", value=cloud9_admin_user.user_name)
+        cdk.CfnOutput(self, "Admin_Password_Secret_URL", value=secret_url)
 
         cloud9_admin_user.node.default_child.cfn_options.metadata = {
             "cfn_nag": {
