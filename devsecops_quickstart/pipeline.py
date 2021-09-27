@@ -243,7 +243,7 @@ class CICDPipelineStack(cdk.Stack):
                         account=stage_config["stage_account"],
                         region=stage_config["stage_region"],
                     ),
-                )
+                ),
             )
 
         cdk.CfnOutput(self, "pipeline-artifact-bucket", value=pipeline.code_pipeline.artifact_bucket.bucket_name)
