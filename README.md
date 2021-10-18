@@ -144,13 +144,3 @@ $ cdk deploy devsecops-quickstart-production --profile toolchain-profile
 #### Q: How to access the Cloud9 Environment?
 A: Check the CloudFormation Outputs section of the stack called `tooling-Cloud9`. There you can find output parameters
 for the environment URL, admin user, and the AWS Secret Manager secret containing the admin password.
-
-#### Q: Why does Cfn Nag invocation fail in the pipeline?
-A: When invoked from AWS Codepipeline, the Cfn Nag Lambda function expects the pipeline invocation to include a `string` 
-value for `User Parameters` that will be interpreted as a `glob` pattern by the lambda to identify the CloudFormation 
-templates for evaluation. AWS CDK construct for LambdaInvokeAction in the pipeline, however, expects a `map` object for 
-user parameters and does not allow providing bare `string` values. As a quick fix, you need to set this value directly
-in the console. The first time after the pipeline is deployed, edit the CodePipeline step for `cfn-nag` invocation and 
-set the user parameters value to be used. Use`**/*.template.json`, for example, to scan all AWS CDK synthesied stacks.
-
-![user_parameters](./assets/user_parameters.png)

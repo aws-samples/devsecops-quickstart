@@ -210,9 +210,7 @@ class CICDPipelineStack(cdk.Stack):
                 action_name="cfn-nag",
                 inputs=[cloud_assembly_artifact],
                 lambda_=lambda_.Function.from_function_arn(self, "cfn-nag-lambda", cfn_nag_lambda_arn),
-                # user_parameters must be a map, but cfn_nag requires a string
-                # This property needs to be set manually in the console, until nag fixes this issue
-                # user_parameters="**/*.template.json",
+                user_parameters_string="**/*.template.json",
             ),
         )
 
