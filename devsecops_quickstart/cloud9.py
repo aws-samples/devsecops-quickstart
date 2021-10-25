@@ -51,6 +51,7 @@ class Cloud9Stack(cdk.Stack):
             self,
             general_config["repository_name"],
             instance_type="t2.micro",
+            automatic_stop_time_minutes=30,
             owner_arn=cloud9_admin_user.user_arn,
             subnet_id=vpc.public_subnets[0].subnet_id,
             repositories=[
