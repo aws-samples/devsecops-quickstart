@@ -94,15 +94,15 @@ func HandleLambdaRequest(ctx context.Context, event MyEvent) (string, error) {
 
 	// WARNING: Uncomment only for testing/debugging purposes, as the event contains temporary credentials
 	// passed from pipeline to lambda
-	// eventJson, _ := json.Marshal(event)
-	// fmt.Println("Event received: " + string(eventJson))
+	eventJson, _ := json.Marshal(event)
+	fmt.Println("Event received: " + string(eventJson))
 
 	codePipelineJob := event.CodePipelineJob
 
 	// WARNING: Uncomment only for testing/debugging purposes, as the event contains temporary credentials
 	// passed from pipeline to lambda
-	// jobJson, _ := json.Marshal(codePipelineJob)
-	// fmt.Println("CodePipeline Job: " + string(jobJson))
+	jobJson, _ := json.Marshal(codePipelineJob)
+	fmt.Println("CodePipeline Job: " + string(jobJson))
 
 	userParameters := codePipelineJob.Data.ActionConfiguration.Configuration.UserParameters
 	var parameters CodePipelineParameters
