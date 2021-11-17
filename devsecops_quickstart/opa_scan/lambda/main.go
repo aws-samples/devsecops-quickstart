@@ -91,6 +91,8 @@ type CodePipelineArtifactCredentials struct {
 
 func HandleLambdaRequest(ctx context.Context, event MyEvent) (string, error) {
 	fmt.Println("Handler started!")
+	fmt.Println("Event received: ")
+	fmt.Println(event)
 
 	// WARNING: Uncomment only for testing/debugging purposes, as the event contains temporary credentials
 	// passed from pipeline to lambda
