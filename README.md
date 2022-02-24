@@ -1,10 +1,10 @@
 
 ## DevSecOps Quick Start
 
-This artefact helps development teams quickly set up a complete development environment following security and DevOps
-standards and best practices. Upon successful deployment, you'll have:
+This artefact helps development teams to quickly set up a ready to use environment integrated with a
+multi-account CI/CD pipeline following security and DevOps best practices. Upon successful deployment, you will have:
 
-- an AWS CodeCommit repository 
+- an AWS CodeCommit Git repository 
 - an AWS Cloud9 development environment integrated with the code repository
 - a multi-stage, multi-account CI/CD pipeline integrated with the code repository  
 - pipeline integration with [Bandit](https://github.com/PyCQA/bandit) for finding common security issues in Python code 
