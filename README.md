@@ -109,7 +109,7 @@ $ cdk deploy devsecops-quickstart-opa-scan --profile toolchain-profile
 Run the following command to deploy OPA Scan stack into toolchain account.
 
 ```
-$ cdk deploy cdk deploy devsecops-quickstart-cfn-nag --profile toolchain-profile
+$ cdk deploy devsecops-quickstart-cfn-nag --profile toolchain-profile
 ```
 
 #### CI/CD Pipeline - Development

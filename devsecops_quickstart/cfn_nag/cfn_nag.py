@@ -88,7 +88,7 @@ class CfnNag(cdk.Stack):
             self,
             "cfn-nag-handler",
             function_name="cfn-nag",
-            runtime=lambda_.Runtime.RUBY_2_5,
+            runtime=lambda_.Runtime.RUBY_2_7,
             memory_size=1024,
             timeout=cdk.Duration.seconds(300),
             handler="handler.handler",
