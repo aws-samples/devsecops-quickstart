@@ -134,6 +134,7 @@ class CICDPipelineStack(cdk.Stack):
                     "phases": {
                         "install": {
                             "commands": [
+                                "n lts",
                                 "npm install -g snyk",
                                 "pip install awscli --upgrade",
                                 "pip install -r requirements.txt",
