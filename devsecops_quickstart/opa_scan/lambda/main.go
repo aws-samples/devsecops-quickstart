@@ -91,20 +91,18 @@ type CodePipelineArtifactCredentials struct {
 
 func HandleLambdaRequest(ctx context.Context, event MyEvent) (string, error) {
 	fmt.Println("Handler started!")
-	fmt.Println("Event received: ")
-	fmt.Println(event)
 
 	// WARNING: Uncomment only for testing/debugging purposes, as the event contains temporary credentials
 	// passed from pipeline to lambda
-	eventJson, _ := json.Marshal(event)
-	fmt.Println("Event received: " + string(eventJson))
+	// eventJson, _ := json.Marshal(event)
+	// fmt.Println("Event received: " + string(eventJson))
 
 	codePipelineJob := event.CodePipelineJob
 
 	// WARNING: Uncomment only for testing/debugging purposes, as the event contains temporary credentials
 	// passed from pipeline to lambda
-	jobJson, _ := json.Marshal(codePipelineJob)
-	fmt.Println("CodePipeline Job: " + string(jobJson))
+	// jobJson, _ := json.Marshal(codePipelineJob)
+	// fmt.Println("CodePipeline Job: " + string(jobJson))
 
 	userParameters := codePipelineJob.Data.ActionConfiguration.Configuration.UserParameters
 	var parameters CodePipelineParameters
@@ -117,7 +115,7 @@ func HandleLambdaRequest(ctx context.Context, event MyEvent) (string, error) {
 	inputArtifact := codePipelineJob.Data.InputArtifacts[0].Location.S3Location
 
 	c := app.New(parameters.Rules, event.Parameters)
-	result, err := c.Eval(ctx, "s3://" + inputArtifact.BucketName + "/" + inputArtifact.ObjectKey)
+	result, err := c.Eval(ctx, "s3://"+inputArtifact.BucketName+"/"+inputArtifact.ObjectKey)
 	if err != nil {
 		return "", err
 	}
@@ -170,7 +168,7 @@ func PutCodePipelineResult(ctx context.Context, job CodePipelineJob, result app.
 	}
 
 	_, err = svc.PutJobSuccessResult(context.Background(), &codepipeline.PutJobSuccessResultInput{
-		JobId:           aws.String(job.ID),
+		JobId: aws.String(job.ID),
 	})
 
 	if err != nil {
@@ -178,7 +176,7 @@ func PutCodePipelineResult(ctx context.Context, job CodePipelineJob, result app.
 	}
 
 	fmt.Println("Marking job as success, all resources are compliant.")
-	return "Marked job" + job.ID +  " as success.", nil
+	return "Marked job" + job.ID + " as success.", nil
 }
 
 func main() {
