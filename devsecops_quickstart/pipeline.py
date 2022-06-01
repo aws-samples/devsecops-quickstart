@@ -86,6 +86,9 @@ class CICDPipelineStack(cdk.Stack):
                     "python -m black --check .",
                 ],
                 environment=codebuild.BuildEnvironment(privileged=True),
+                role_policy_statements=[
+                    iam.PolicyStatement(effect=iam.Effect.ALLOW, actions=["sts:assumeRole"], resources=["*"])
+                ],
             ),
         )
 
