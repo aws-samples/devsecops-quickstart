@@ -12,7 +12,9 @@ class CfnNag(cdk.Stack):
 
         super().__init__(scope, id, **kwargs)
 
-        lambda_role = iam.Role(self, "cfn-nag-role", assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"))
+        lambda_role = iam.Role(
+            self, "cfn-nag-role", role_name="cfn-nag-role", assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+        )
         lambda_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
                 self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -99,26 +101,4 @@ class CfnNag(cdk.Stack):
                 key=general_config["cfn_nag"]["code"]["key"],
             ),
             environment={"RULE_BUCKET_NAME": rules_bucket.bucket_name, "RuleBucketPrefix": ""},
-        )
-
-        cfn_nag_params = general_config["parameter_name"]["cfn_nag"]
-        ssm.StringParameter(
-            self,
-            "rules-bucket-url-ssm-param",
-            parameter_name=cfn_nag_params["rules_bucket"],
-            string_value=rules_bucket.bucket_name,
-        )
-
-        ssm.StringParameter(
-            self,
-            "lambda-arn-ssm-param",
-            parameter_name=cfn_nag_params["lambda_arn"],
-            string_value=handler.function_arn,
-        )
-
-        ssm.StringParameter(
-            self,
-            "role-arn-ssm-param",
-            parameter_name=cfn_nag_params["role_arn"],
-            string_value=lambda_role.role_arn,
         )

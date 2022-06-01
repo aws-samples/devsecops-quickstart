@@ -7,7 +7,6 @@ import aws_cdk.aws_codecommit as codecommit
 import aws_cdk.aws_iam as iam
 
 import aws_cdk.aws_lambda as lambda_
-import aws_cdk.aws_ssm as ssm
 
 import logging
 
@@ -23,11 +22,6 @@ class ToolingStage(cdk.Stage):
         super().__init__(scope, id="tooling", **kwargs)
 
         Cloud9Stack(self, general_config=general_config, **kwargs)
-
-
-class LazyProducer:
-    def __init__(self, func):
-        self.produce = func
 
 
 class CICDPipelineStack(cdk.Stack):
@@ -159,17 +153,6 @@ class CICDPipelineStack(cdk.Stack):
             ),
         )
 
-        opa_scan_params = general_config["parameter_name"]["opa_scan"]
-        opa_scan_rules_bucket_name = ssm.StringParameter.value_from_lookup(
-            self, parameter_name=opa_scan_params["rules_bucket"]
-        )
-        opa_scan_lambda_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=opa_scan_params["lambda_arn"])
-        opa_scan_role_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=opa_scan_params["role_arn"])
-
-        cfn_nag_params = general_config["parameter_name"]["cfn_nag"]
-        cfn_nag_lambda_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=cfn_nag_params["lambda_arn"])
-        cfn_nag_role_arn = ssm.StringParameter.value_from_lookup(self, parameter_name=cfn_nag_params["role_arn"])
-
         pipeline.code_pipeline.artifact_bucket.add_to_resource_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
@@ -179,8 +162,8 @@ class CICDPipelineStack(cdk.Stack):
                     f"{pipeline.code_pipeline.artifact_bucket.bucket_arn}/*",
                 ],
                 principals=[
-                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: opa_scan_role_arn))),
-                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_role_arn))),
+                    iam.ArnPrincipal(f"arn:aws:iam::{self.account}:role/opa-scan-lambda-role"),
+                    iam.ArnPrincipal(f"arn:aws:iam::{self.account}:role/cfn-nag-role"),
                 ],
             )
         )
@@ -191,8 +174,8 @@ class CICDPipelineStack(cdk.Stack):
                 actions=["kms:Decrypt", "kms:DescribeKey"],
                 resources=["*"],
                 principals=[
-                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: opa_scan_role_arn))),
-                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_role_arn))),
+                    iam.ArnPrincipal(f"arn:aws:iam::{self.account}:role/opa-scan-lambda-role"),
+                    iam.ArnPrincipal(f"arn:aws:iam::{self.account}:role/cfn-nag-role"),
                 ],
             )
         )
@@ -215,19 +198,15 @@ class CICDPipelineStack(cdk.Stack):
                 action_name="opa-scan",
                 inputs=[cloud_assembly_artifact],
                 lambda_=lambda_.Function.from_function_arn(
-                    self, "opa-scan-lambda", cdk.Lazy.string(LazyProducer(lambda context: opa_scan_lambda_arn))
+                    self, "opa-scan-lambda", f"arn:aws:lambda:{self.region}:{self.account}:function:opa-scan"
                 ),
-                user_parameters={
-                    "Rules": [
-                        f"s3://{cdk.Lazy.string(LazyProducer(lambda context: opa_scan_rules_bucket_name))}/cloudformation"
-                    ]
-                },
+                user_parameters={"Rules": [f"s3://opa-scan-rules-{self.account}/cloudformation"]},
             ),
             codepipeline_actions.LambdaInvokeAction(
                 action_name="cfn-nag",
                 inputs=[cloud_assembly_artifact],
                 lambda_=lambda_.Function.from_function_arn(
-                    self, "cfn-nag-lambda", cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_lambda_arn))
+                    self, "cfn-nag-lambda", f"arn:aws:lambda:{self.region}:{self.account}:function:cfn-nag"
                 ),
                 user_parameters_string="**/*.template.json",
             ),

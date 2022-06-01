@@ -16,6 +16,7 @@ class OPAScanStack(cdk.Stack):
         lambda_role = iam.Role(
             self,
             "opa-scan-lambda-role",
+            role_name="opa-scan-lambda-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
         )
         lambda_role.add_managed_policy(
@@ -91,32 +92,11 @@ class OPAScanStack(cdk.Stack):
         handler = lambda_go.GoFunction(
             self,
             "opa-scan",
+            function_name="opa-scan",
             entry="devsecops_quickstart/opa_scan/lambda",
             role=lambda_role,
             environment={"RUN_ON_LAMBDA": "True"},
             timeout=cdk.Duration.minutes(2),
             memory_size=256,
             runtime=lambda_.Runtime.GO_1_X,
-        )
-
-        opa_scan_params = general_config["parameter_name"]["opa_scan"]
-        ssm.StringParameter(
-            self,
-            "rules-bucket-url-ssm-param",
-            parameter_name=opa_scan_params["rules_bucket"],
-            string_value=rules_bucket.bucket_name,
-        )
-
-        ssm.StringParameter(
-            self,
-            "lambda-arn-ssm-param",
-            parameter_name=opa_scan_params["lambda_arn"],
-            string_value=handler.function_arn,
-        )
-
-        ssm.StringParameter(
-            self,
-            "role-arn-ssm-param",
-            parameter_name=opa_scan_params["role_arn"],
-            string_value=lambda_role.role_arn,
         )
