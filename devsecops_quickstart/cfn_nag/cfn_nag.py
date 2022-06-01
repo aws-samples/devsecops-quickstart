@@ -1,7 +1,6 @@
 import aws_cdk.core as cdk
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_s3_deployment as s3_deployment
-import aws_cdk.aws_ssm as ssm
 import aws_cdk.aws_lambda as lambda_
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_kms as kms
@@ -85,7 +84,7 @@ class CfnNag(cdk.Stack):
             )
         )
 
-        handler = lambda_.Function(
+        lambda_.Function(
             self,
             "cfn-nag-handler",
             function_name="cfn-nag",

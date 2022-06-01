@@ -4,7 +4,6 @@ import aws_cdk.aws_lambda as lambda_
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_s3_deployment as s3_deployment
-import aws_cdk.aws_ssm as ssm
 import aws_cdk.aws_kms as kms
 
 
@@ -89,7 +88,7 @@ class OPAScanStack(cdk.Stack):
             )
         )
 
-        handler = lambda_go.GoFunction(
+        lambda_go.GoFunction(
             self,
             "opa-scan",
             function_name="opa-scan",
