@@ -180,7 +180,7 @@ class CICDPipelineStack(cdk.Stack):
                 ],
                 principals=[
                     iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: opa_scan_role_arn))),
-                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_role_arn)))
+                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_role_arn))),
                 ],
             )
         )
@@ -192,7 +192,7 @@ class CICDPipelineStack(cdk.Stack):
                 resources=["*"],
                 principals=[
                     iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: opa_scan_role_arn))),
-                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_role_arn)))
+                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_role_arn))),
                 ],
             )
         )
@@ -214,17 +214,21 @@ class CICDPipelineStack(cdk.Stack):
             codepipeline_actions.LambdaInvokeAction(
                 action_name="opa-scan",
                 inputs=[cloud_assembly_artifact],
-                lambda_=lambda_.Function.from_function_arn(self,
-                    "opa-scan-lambda",
-                    cdk.Lazy.string(LazyProducer(lambda context: opa_scan_lambda_arn))),
-                user_parameters={"Rules": [f"s3://{cdk.Lazy.string(LazyProducer(lambda context: opa_scan_rules_bucket_name))}/cloudformation"]},
+                lambda_=lambda_.Function.from_function_arn(
+                    self, "opa-scan-lambda", cdk.Lazy.string(LazyProducer(lambda context: opa_scan_lambda_arn))
+                ),
+                user_parameters={
+                    "Rules": [
+                        f"s3://{cdk.Lazy.string(LazyProducer(lambda context: opa_scan_rules_bucket_name))}/cloudformation"
+                    ]
+                },
             ),
             codepipeline_actions.LambdaInvokeAction(
                 action_name="cfn-nag",
                 inputs=[cloud_assembly_artifact],
-                lambda_=lambda_.Function.from_function_arn(self,
-                    "cfn-nag-lambda",
-                    cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_lambda_arn))),
+                lambda_=lambda_.Function.from_function_arn(
+                    self, "cfn-nag-lambda", cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_lambda_arn))
+                ),
                 user_parameters_string="**/*.template.json",
             ),
         )
