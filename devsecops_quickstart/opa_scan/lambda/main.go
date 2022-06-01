@@ -115,7 +115,7 @@ func HandleLambdaRequest(ctx context.Context, event MyEvent) (string, error) {
 	inputArtifact := codePipelineJob.Data.InputArtifacts[0].Location.S3Location
 
 	c := app.New(parameters.Rules, event.Parameters)
-	result, err := c.Eval(ctx, "s3://" + inputArtifact.BucketName + "/" + inputArtifact.ObjectKey)
+	result, err := c.Eval(ctx, "s3://"+inputArtifact.BucketName+"/"+inputArtifact.ObjectKey)
 	if err != nil {
 		return "", err
 	}
@@ -168,7 +168,7 @@ func PutCodePipelineResult(ctx context.Context, job CodePipelineJob, result app.
 	}
 
 	_, err = svc.PutJobSuccessResult(context.Background(), &codepipeline.PutJobSuccessResultInput{
-		JobId:           aws.String(job.ID),
+		JobId: aws.String(job.ID),
 	})
 
 	if err != nil {
@@ -176,7 +176,7 @@ func PutCodePipelineResult(ctx context.Context, job CodePipelineJob, result app.
 	}
 
 	fmt.Println("Marking job as success, all resources are compliant.")
-	return "Marked job" + job.ID +  " as success.", nil
+	return "Marked job" + job.ID + " as success.", nil
 }
 
 func main() {

@@ -1,7 +1,6 @@
 import aws_cdk.core as cdk
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_s3_deployment as s3_deployment
-import aws_cdk.aws_ssm as ssm
 import aws_cdk.aws_lambda as lambda_
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_kms as kms
@@ -12,7 +11,9 @@ class CfnNag(cdk.Stack):
 
         super().__init__(scope, id, **kwargs)
 
-        lambda_role = iam.Role(self, "cfn-nag-role", assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"))
+        lambda_role = iam.Role(
+            self, "cfn-nag-role", role_name="cfn-nag-role", assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+        )
         lambda_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
                 self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -83,11 +84,11 @@ class CfnNag(cdk.Stack):
             )
         )
 
-        handler = lambda_.Function(
+        lambda_.Function(
             self,
             "cfn-nag-handler",
             function_name="cfn-nag",
-            runtime=lambda_.Runtime.RUBY_2_5,
+            runtime=lambda_.Runtime.RUBY_2_7,
             memory_size=1024,
             timeout=cdk.Duration.seconds(300),
             handler="handler.handler",
@@ -99,26 +100,4 @@ class CfnNag(cdk.Stack):
                 key=general_config["cfn_nag"]["code"]["key"],
             ),
             environment={"RULE_BUCKET_NAME": rules_bucket.bucket_name, "RuleBucketPrefix": ""},
-        )
-
-        cfn_nag_params = general_config["parameter_name"]["cfn_nag"]
-        ssm.StringParameter(
-            self,
-            "rules-bucket-url-ssm-param",
-            parameter_name=cfn_nag_params["rules_bucket"],
-            string_value=rules_bucket.bucket_name,
-        )
-
-        ssm.StringParameter(
-            self,
-            "lambda-arn-ssm-param",
-            parameter_name=cfn_nag_params["lambda_arn"],
-            string_value=handler.function_arn,
-        )
-
-        ssm.StringParameter(
-            self,
-            "role-arn-ssm-param",
-            parameter_name=cfn_nag_params["role_arn"],
-            string_value=lambda_role.role_arn,
         )

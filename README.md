@@ -53,9 +53,13 @@ Once the virtualenv is activated, you can install the required dependencies.
 $ pip install -r requirements.txt
 ```
 
+### Define Account IDs and Regions
+Update `cdk.json` with account number and region values to be used for toolchain, and deployment accounts. The current
+setting has three deployment accounts for Dev, QA, and Prod, just as an example. You can add/remove deployment stages
+in `cdk.json` config to adjust the pipeline according to your needs. 
+
 ### Bootstrap
 
-Update `cdk.json` with account number and region values to be used for toolchain, Dev, QA, and Prod deployments.
 The toolchain account will host all the required tools deployed by this quick start. The Dev/QA/Prod accounts will 
 be used as target accounts for deployment of your application(s).
 
@@ -109,7 +113,7 @@ $ cdk deploy devsecops-quickstart-opa-scan --profile toolchain-profile
 Run the following command to deploy OPA Scan stack into toolchain account.
 
 ```
-$ cdk deploy cdk deploy devsecops-quickstart-cfn-nag --profile toolchain-profile
+$ cdk deploy devsecops-quickstart-cfn-nag --profile toolchain-profile
 ```
 
 #### CI/CD Pipeline - Development
