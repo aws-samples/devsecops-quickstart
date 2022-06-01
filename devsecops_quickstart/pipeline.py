@@ -25,6 +25,11 @@ class ToolingStage(cdk.Stage):
         Cloud9Stack(self, general_config=general_config, **kwargs)
 
 
+class LazyProducer:
+    def __init__(self, func):
+        self.produce = func
+
+
 class CICDPipelineStack(cdk.Stack):
     def __init__(
         self,
@@ -173,7 +178,10 @@ class CICDPipelineStack(cdk.Stack):
                     pipeline.code_pipeline.artifact_bucket.bucket_arn,
                     f"{pipeline.code_pipeline.artifact_bucket.bucket_arn}/*",
                 ],
-                principals=[iam.ArnPrincipal(opa_scan_role_arn), iam.ArnPrincipal(cfn_nag_role_arn)],
+                principals=[
+                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: opa_scan_role_arn))),
+                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_role_arn)))
+                ],
             )
         )
 
@@ -182,7 +190,10 @@ class CICDPipelineStack(cdk.Stack):
                 effect=iam.Effect.ALLOW,
                 actions=["kms:Decrypt", "kms:DescribeKey"],
                 resources=["*"],
-                principals=[iam.ArnPrincipal(opa_scan_role_arn), iam.ArnPrincipal(cfn_nag_role_arn)],
+                principals=[
+                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: opa_scan_role_arn))),
+                    iam.ArnPrincipal(cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_role_arn)))
+                ],
             )
         )
 
@@ -203,13 +214,17 @@ class CICDPipelineStack(cdk.Stack):
             codepipeline_actions.LambdaInvokeAction(
                 action_name="opa-scan",
                 inputs=[cloud_assembly_artifact],
-                lambda_=lambda_.Function.from_function_arn(self, "opa-scan-lambda", opa_scan_lambda_arn),
-                user_parameters={"Rules": [f"s3://{opa_scan_rules_bucket_name}/cloudformation"]},
+                lambda_=lambda_.Function.from_function_arn(self,
+                    "opa-scan-lambda",
+                    cdk.Lazy.string(LazyProducer(lambda context: opa_scan_lambda_arn))),
+                user_parameters={"Rules": [f"s3://{cdk.Lazy.string(LazyProducer(lambda context: opa_scan_rules_bucket_name))}/cloudformation"]},
             ),
             codepipeline_actions.LambdaInvokeAction(
                 action_name="cfn-nag",
                 inputs=[cloud_assembly_artifact],
-                lambda_=lambda_.Function.from_function_arn(self, "cfn-nag-lambda", cfn_nag_lambda_arn),
+                lambda_=lambda_.Function.from_function_arn(self,
+                    "cfn-nag-lambda",
+                    cdk.Lazy.string(LazyProducer(lambda context: cfn_nag_lambda_arn))),
                 user_parameters_string="**/*.template.json",
             ),
         )
