@@ -149,6 +149,17 @@ $ cdk deploy devsecops-quickstart-production --profile toolchain-profile
 A: Check the CloudFormation Outputs section of the stack called `tooling-Cloud9`. There you can find output parameters
 for the environment URL, admin user, and the AWS Secret Manager secret containing the admin password.
 
+#### Q: KMS Key error when deploying `devsecops-quickstart-cicd-development` after the latest update.
+A: The role names in `devsecops-quickstart-opa-scan` and `devsecops-quickstart-cfn-nag` stacks has changed. If you get an error stating `Policy contains a statement with one or more invalid principals`, redeploy OPA-Scan and Cfn-Nag stacks to have the new roles deployed first before being addressed in the KMS Key policy. 
+
+`cdk deploy devsecops-quickstart-opa-scan --profile toolchain-profile`
+
+`cdk deploy devsecops-quickstart-cfn-nag --profile toolchain-profile`
+
+
+#### Q: Cfn-Nag execution error when triggered by the pipeline.
+A: AWS Lambda runtime no longer supports Ruby2.5, but the current Cfn-Nag package available on AWS Serverless Application Repository, on which we also depend here in the pipeline, requires Ruby2.5 runtime (open issue on Cfn-Nag: https://github.com/stelligent/cfn_nag/issues/588)
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
