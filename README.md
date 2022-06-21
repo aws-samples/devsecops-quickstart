@@ -2,7 +2,11 @@
 ## DevSecOps Quick Start
 
 This artefact helps development teams to quickly set up a ready to use environment integrated with a
-multi-account CI/CD pipeline following security and DevOps best practices. Upon successful deployment, you will have:
+multi-account CI/CD pipeline following security and DevOps best practices.
+
+![architecture](./assets/architecture.png)
+
+Upon successful deployment, you will have:
 
 - an AWS CodeCommit Git repository 
 - an AWS Cloud9 development environment integrated with the code repository
@@ -14,11 +18,6 @@ multi-account CI/CD pipeline following security and DevOps best practices. Upon 
 - pipeline integration with [Open Policy Agent (OPA)](https://www.openpolicyagent.org/) that enables you define and
   enforce policies on infrastructure resources at development time   
 
-![validate](./assets/validate.png)
-![cloud9](./assets/cloud9.png)
-![dev](./assets/dev.png)
-![qa](./assets/qa.png)
-![prod](./assets/prod.png)
 ### Set Up
 
 This project is set up like a standard Python project.  The initialization
@@ -136,6 +135,10 @@ $ git commit -m "initial commit"
 $ git push --set-upstream origin development
 ```
 
+![validate](./assets/validate.png)
+![cloud9](./assets/cloud9.png)
+![dev](./assets/dev.png)
+
 #### CI/CD Pipeline - Production
 Run the following command to deploy the production CI/CD pipeline. The production pipeline will track changes from
 `production_branch` and deploys to QA and Prod account as configured in `cdk.json`.
@@ -143,6 +146,9 @@ Run the following command to deploy the production CI/CD pipeline. The productio
 ```
 $ cdk deploy devsecops-quickstart-production --profile toolchain-profile
 ```
+![validate](./assets/validate.png)
+![qa](./assets/qa.png)
+![prod](./assets/prod.png)
 
 ## Troubleshooting
 #### Q: How to access the Cloud9 Environment?
