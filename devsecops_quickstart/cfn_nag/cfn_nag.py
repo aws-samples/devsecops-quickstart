@@ -5,6 +5,7 @@ import aws_cdk.aws_lambda as lambda_
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_kms as kms
 
+
 class CfnNag(cdk.Stack):
     def __init__(self, scope: cdk.Construct, id: str, general_config: dict, **kwargs):
 
