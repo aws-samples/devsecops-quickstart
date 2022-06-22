@@ -53,43 +53,54 @@ class CICDPipelineStack(cdk.Stack):
         # Defines the artifact representing the cloud assembly (cloudformation template + all other assets)
         cloud_assembly_artifact = codepipeline.Artifact()
 
+        source_action = codepipeline_actions.CodeCommitSourceAction(
+            repository=repository,
+            branch=general_config["development_branch"]
+            if is_development_pipeline
+            else general_config["production_branch"],
+            output=source_artifact,
+            action_name="Source",
+        )
+
+        synth_action = pipelines.SimpleSynthAction(
+            cloud_assembly_artifact=cloud_assembly_artifact,
+            source_artifact=source_artifact,
+            install_commands=[
+                "nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 "
+                "--storage-driver=overlay2 &",
+                'timeout 15 sh -c "until docker info; do echo .; sleep 1; done"',
+                "npm install aws-cdk -g",
+                "pip install -r requirements.txt",
+                "cd $HOME/.goenv && git pull --ff-only && cd -",
+                "goenv install 1.16.3",
+                "goenv local 1.16.3",
+                "go version",
+            ],
+            synth_command="npx cdk synth",
+            test_commands=[
+                "python -m flake8 .",
+                "python -m black --check .",
+            ],
+            environment=codebuild.BuildEnvironment(privileged=True),
+            role_policy_statements=[
+                iam.PolicyStatement(effect=iam.Effect.ALLOW, actions=["sts:assumeRole"], resources=["*"])
+            ],
+        )
+
         pipeline = pipelines.CdkPipeline(
             self,
             f"{id}-pipeline",
             cloud_assembly_artifact=cloud_assembly_artifact,
             pipeline_name=id,
-            source_action=codepipeline_actions.CodeCommitSourceAction(
-                repository=repository,
-                branch=general_config["development_branch"]
-                if is_development_pipeline
-                else general_config["production_branch"],
-                output=source_artifact,
-                action_name="Source",
-            ),
-            synth_action=pipelines.SimpleSynthAction(
-                cloud_assembly_artifact=cloud_assembly_artifact,
-                source_artifact=source_artifact,
-                install_commands=[
-                    "nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 "
-                    "--storage-driver=overlay2 &",
-                    'timeout 15 sh -c "until docker info; do echo .; sleep 1; done"',
-                    "npm install aws-cdk -g",
-                    "pip install -r requirements.txt",
-                    "cd $HOME/.goenv && git pull --ff-only && cd -",
-                    "goenv install 1.16.3",
-                    "goenv local 1.16.3",
-                    "go version",
-                ],
-                synth_command="npx cdk synth",
-                test_commands=[
-                    "python -m flake8 .",
-                    "python -m black --check .",
-                ],
-                environment=codebuild.BuildEnvironment(privileged=True),
-                role_policy_statements=[
-                    iam.PolicyStatement(effect=iam.Effect.ALLOW, actions=["sts:assumeRole"], resources=["*"])
-                ],
-            ),
+            source_action=source_action,
+            synth_action=synth_action,
+        )
+
+        synth_action.project.node.default_child.source = codebuild.CfnProject.SourceProperty(
+            type="CODEPIPELINE",
+            git_submodules_config=codebuild.CfnProject.GitSubmodulesConfigProperty(
+                fetch_submodules=True
+            )
         )
 
         cdk.Tags.of(pipeline.code_pipeline.artifact_bucket).add("resource-owner", "pipeline")
