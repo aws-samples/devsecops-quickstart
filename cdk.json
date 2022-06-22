@@ -19,33 +19,27 @@
         "repository_name": "devsecops-quickstart",
         "development_branch": "development",
         "production_branch": "master",
-        "toolchain_account": "<TODO_AWS_TOOL_CHAIN_ACCOUNT_ID>",
-        "toolchain_region": "<TODO_AWS_TOOL_CHAIN_ACCOUNT_REGION>",
+        "toolchain_account": "911685872277",
+        "toolchain_region": "eu-central-1",
         "secret_name": {
           "snyk": "snyk-auth-token"
-        },
-        "cfn_nag": {
-          "code": {
-            "bucket_name": "awsserverlessrepo-changesets-1xxlnameudh3r",
-            "key": "911685872277/arn:aws:serverlessrepo:us-east-1:275155842945:applications-cfn-nag-pipeline-versions-0.5.5/3430af9d-2351-4577-a35c-79aacad46adb"
-          }
         }
       },
       "stage": {
         "dev": {
           "manual_approvals": false,
-          "stage_account": "<TODO_AWS_DEVELOPMENT_ACCOUNT_ID>",
-          "stage_region": "<TODO_AWS_DEVELOPMENT_ACCOUNT_REGION>"
+          "stage_account": "501312947573",
+          "stage_region": "eu-central-1"
         },
         "qa": {
           "manual_approvals": false,
-          "stage_account": "<TODO_AWS_QA_ACCOUNT_ID>",
-          "stage_region": "<TODO_AWS_QA_ACCOUNT_REGION>"
+          "stage_account": "808243397334",
+          "stage_region": "eu-central-1"
         },
         "prod": {
           "manual_approvals": true,
-          "stage_account": "<TODO_AWS_PRODUCTION_ACCOUNT_ID>",
-          "stage_region": "<TODO_AWS_PRODUCTION_ACCOUNT_REGION>"
+          "stage_account": "773641490878",
+          "stage_region": "eu-central-1"
         }
       }
     }

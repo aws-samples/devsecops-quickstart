@@ -1,0 +1,3 @@
+[submodule "devsecops_quickstart/cfn_nag/cfn-nag-pipeline"]
+	path = devsecops_quickstart/cfn_nag/cfn-nag-pipeline
+	url = https://github.com/stelligent/cfn-nag-pipeline.git

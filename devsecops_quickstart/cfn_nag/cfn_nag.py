@@ -5,7 +5,6 @@ import aws_cdk.aws_lambda as lambda_
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_kms as kms
 
-
 class CfnNag(cdk.Stack):
     def __init__(self, scope: cdk.Construct, id: str, general_config: dict, **kwargs):
 
@@ -93,11 +92,6 @@ class CfnNag(cdk.Stack):
             timeout=cdk.Duration.seconds(300),
             handler="handler.handler",
             role=lambda_role,
-            code=lambda_.Code.from_bucket(
-                bucket=s3.Bucket.from_bucket_name(
-                    self, "code-bucket", bucket_name=general_config["cfn_nag"]["code"]["bucket_name"]
-                ),
-                key=general_config["cfn_nag"]["code"]["key"],
-            ),
+            code=lambda_.Code.from_asset("devsecops_quickstart/cfn_nag/cfn-nag-pipeline/lib"),
             environment={"RULE_BUCKET_NAME": rules_bucket.bucket_name, "RuleBucketPrefix": ""},
         )
