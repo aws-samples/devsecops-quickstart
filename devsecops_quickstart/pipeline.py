@@ -81,6 +81,7 @@ class CICDPipelineStack(cdk.Stack):
                 "go version",
             ]
             + [
+                "git init",
                 "cd devsecops_quickstart/cfn_nag",
                 "git submodule add https://github.com/stelligent/cfn-nag-pipeline.git",
                 "ls cfn-nag-pipeline",
