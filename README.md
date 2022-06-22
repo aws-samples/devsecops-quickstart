@@ -109,7 +109,7 @@ $ cdk deploy devsecops-quickstart-opa-scan --profile toolchain-profile
 ```
 
 #### Cfn Nag
-Run the following command to deploy OPA Scan stack into toolchain account.
+Run the following command to deploy Cfn Nag stack into toolchain account.
 
 ```
 $ cdk deploy devsecops-quickstart-cfn-nag --profile toolchain-profile
