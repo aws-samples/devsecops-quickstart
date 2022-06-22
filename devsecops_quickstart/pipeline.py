@@ -69,12 +69,22 @@ class CICDPipelineStack(cdk.Stack):
                 "nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 "
                 "--storage-driver=overlay2 &",
                 'timeout 15 sh -c "until docker info; do echo .; sleep 1; done"',
+            ]
+            + [
                 "npm install aws-cdk -g",
                 "pip install -r requirements.txt",
+            ]
+            + [
                 "cd $HOME/.goenv && git pull --ff-only && cd -",
                 "goenv install 1.16.3",
                 "goenv local 1.16.3",
                 "go version",
+            ]
+            + [
+                "cd devsecops_quickstart/cfn_nag",
+                "git submodule add https://github.com/stelligent/cfn-nag-pipeline.git",
+                "ls cfn-nag-pipeline",
+                "cd -",
             ],
             synth_command="npx cdk synth",
             test_commands=[
@@ -96,10 +106,11 @@ class CICDPipelineStack(cdk.Stack):
             synth_action=synth_action,
         )
 
-        synth_action.project.node.default_child.source = codebuild.CfnProject.SourceProperty(
-            type="CODEPIPELINE",
-            git_submodules_config=codebuild.CfnProject.GitSubmodulesConfigProperty(fetch_submodules=True),
-        )
+        # git_submodules is currently not supported for CODEPIPELINE type
+        # synth_action.project.node.default_child.source = codebuild.CfnProject.SourceProperty(
+        #     type="CODEPIPELINE",
+        #     git_submodules_config=codebuild.CfnProject.GitSubmodulesConfigProperty(fetch_submodules=True),
+        # )
 
         cdk.Tags.of(pipeline.code_pipeline.artifact_bucket).add("resource-owner", "pipeline")
 
