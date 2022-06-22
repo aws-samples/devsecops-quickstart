@@ -98,9 +98,7 @@ class CICDPipelineStack(cdk.Stack):
 
         synth_action.project.node.default_child.source = codebuild.CfnProject.SourceProperty(
             type="CODEPIPELINE",
-            git_submodules_config=codebuild.CfnProject.GitSubmodulesConfigProperty(
-                fetch_submodules=True
-            )
+            git_submodules_config=codebuild.CfnProject.GitSubmodulesConfigProperty(fetch_submodules=True),
         )
 
         cdk.Tags.of(pipeline.code_pipeline.artifact_bucket).add("resource-owner", "pipeline")
