@@ -211,6 +211,18 @@ class CICDPipelineStack(cdk.Stack):
             )
         )
 
+        if is_development_pipeline:
+            pipeline.add_application_stage(
+                app_stage=ToolingStage(
+                    self,
+                    general_config=general_config,
+                    env=cdk.Environment(
+                        account=general_config["toolchain_account"],
+                        region=general_config["toolchain_region"],
+                    ),
+                ),
+            )
+
         validate_stage = pipeline.add_stage("validate")
         validate_stage.add_actions(
             codepipeline_actions.CodeBuildAction(
@@ -242,18 +254,6 @@ class CICDPipelineStack(cdk.Stack):
                 user_parameters_string="**/*.template.json",
             ),
         )
-
-        if is_development_pipeline:
-            pipeline.add_application_stage(
-                app_stage=ToolingStage(
-                    self,
-                    general_config=general_config,
-                    env=cdk.Environment(
-                        account=general_config["toolchain_account"],
-                        region=general_config["toolchain_region"],
-                    ),
-                ),
-            )
 
         for stage_config_item in stages_config.items():
             stage = stage_config_item[0]
