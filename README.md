@@ -18,6 +18,24 @@ Upon successful deployment, you will have:
 - pipeline integration with [Open Policy Agent (OPA)](https://www.openpolicyagent.org/) that enables you define and
   enforce policies on infrastructure resources at development time   
 
+### Clone the Repository
+This repository contains `Git Submodules`. If cloning for the first time, make sure to use
+`--recurse-submodules` flag to automatically initialize and update each submodule in the repository:
+
+```
+git clone --recurse-submodules https://github.com/aws-samples/devsecops-quickstart.git
+```
+
+If you have cloned the previous version of the repository before the addition of submodules,
+you can initialize and update the submodules using the following command:
+
+```
+git submodule update --init --recursive
+``` 
+
+For more information on working with repositories with `Git Submodules`, please refere to 
+[here](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
+
 ### Set Up
 
 This project is set up like a standard Python project.  The initialization
@@ -162,9 +180,6 @@ A: The role names in `devsecops-quickstart-opa-scan` and `devsecops-quickstart-c
 
 `cdk deploy devsecops-quickstart-cfn-nag --profile toolchain-profile`
 
-
-#### Q: Cfn-Nag execution error when triggered by the pipeline.
-A: AWS Lambda runtime no longer supports Ruby2.5, but the current Cfn-Nag package available on AWS Serverless Application Repository, on which we also depend here in the pipeline, requires Ruby2.5 runtime (open issue on Cfn-Nag: https://github.com/stelligent/cfn_nag/issues/588)
 
 ## Security
 

@@ -84,6 +84,38 @@ class CfnNag(cdk.Stack):
             )
         )
 
+        layer = lambda_.LayerVersion(
+            self, 
+            "cfn-nag-layer",
+            code=lambda_.Code.from_asset("devsecops_quickstart/cfn_nag/layer.zip"),
+            # code=lambda_.Code.from_asset("devsecops_quickstart/cfn_nag/cfn-nag-pipeline/layer"),
+            compatible_runtimes=[lambda_.Runtime.RUBY_2_7],
+            description="Ruby gems required for cfn-nag lambda handler"
+        )
+
+        # layer = lambda_.LayerVersion(
+        #     self, 
+        #     "cfn-nag-layer",
+        #     code=lambda_.Code.from_asset(
+        #         path="devsecops_quickstart/cfn_nag/cfn-nag-pipeline",
+        #         bundling=cdk.BundlingOptions(
+        #             image=cdk.DockerImage("amazon/aws-sam-cli-build-image-ruby2.7"),
+        #             command=[
+        #                 'echo "!!!!!! HELLO WORLD"',
+        #                 # "bundle install --path=ruby/gems"
+        #                 # "mv ruby/gems/ruby/* ruby/gems/",
+        #                 # "rm -rf ruby/gems/2.7.0/cache",
+        #                 # "rm -rf ruby/gems/ruby",
+        #                 # "mkdir layer",
+        #                 # "mv ruby layer",
+        #                 # "cp layer /asset-output"
+        #             ]
+        #         )
+        #     ),
+        #     compatible_runtimes=[lambda_.Runtime.RUBY_2_7],
+        #     description="Ruby gems required for cfn-nag lambda handler"
+        # )
+
         lambda_.Function(
             self,
             "cfn-nag-handler",
@@ -92,6 +124,7 @@ class CfnNag(cdk.Stack):
             memory_size=1024,
             timeout=cdk.Duration.seconds(300),
             handler="handler.handler",
+            layers=[layer],
             role=lambda_role,
             code=lambda_.Code.from_asset("devsecops_quickstart/cfn_nag/cfn-nag-pipeline/lib"),
             environment={"RULE_BUCKET_NAME": rules_bucket.bucket_name, "RuleBucketPrefix": ""},

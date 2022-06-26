@@ -12,5 +12,6 @@ cdk.out
 .idea
 
 node_modules
+**/layer/
 
 .DS_Store
