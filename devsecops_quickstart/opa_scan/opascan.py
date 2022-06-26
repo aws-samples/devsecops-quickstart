@@ -8,9 +8,9 @@ import aws_cdk.aws_kms as kms
 
 
 class OPAScanStack(cdk.Stack):
-    def __init__(self, scope: cdk.Construct, id: str, general_config: dict, **kwargs):
+    def __init__(self, scope: cdk.Construct, general_config: dict, **kwargs):
 
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id="OPAScan", **kwargs)
 
         lambda_role = iam.Role(
             self,

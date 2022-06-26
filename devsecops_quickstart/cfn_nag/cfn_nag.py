@@ -6,10 +6,10 @@ import aws_cdk.aws_iam as iam
 import aws_cdk.aws_kms as kms
 
 
-class CfnNag(cdk.Stack):
-    def __init__(self, scope: cdk.Construct, id: str, general_config: dict, **kwargs):
+class CfnNagStack(cdk.Stack):
+    def __init__(self, scope: cdk.Construct, general_config: dict, **kwargs):
 
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id="CfnNag", **kwargs)
 
         lambda_role = iam.Role(
             self, "cfn-nag-role", role_name="cfn-nag-role", assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
@@ -127,5 +127,5 @@ class CfnNag(cdk.Stack):
             layers=[layer],
             role=lambda_role,
             code=lambda_.Code.from_asset("devsecops_quickstart/cfn_nag/cfn-nag-pipeline/lib"),
-            environment={"RULE_BUCKET_NAME": rules_bucket.bucket_name, "RuleBucketPrefix": ""},
+            environment={"RULE_BUCKET_NAME": rules_bucket.bucket_name, "RULE_BUCKET_PREFIX": ""},
         )
