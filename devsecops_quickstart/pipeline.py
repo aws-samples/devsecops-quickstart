@@ -11,6 +11,8 @@ import aws_cdk.aws_lambda as lambda_
 import logging
 
 from devsecops_quickstart.cloud9 import Cloud9Stack
+from devsecops_quickstart.opa_scan.opascan import OPAScanStack
+from devsecops_quickstart.cfn_nag.cfn_nag import CfnNag
 from devsecops_quickstart.sample_app.sample_app import SampleAppStage
 
 logger = logging.getLogger()
@@ -22,6 +24,10 @@ class ToolingStage(cdk.Stage):
         super().__init__(scope, id="tooling", **kwargs)
 
         Cloud9Stack(self, general_config=general_config, **kwargs)
+
+        OPAScanStack(self, id=f"{general_config['repository_name']}-opa-scan", general_config=general_config)
+
+        CfnNag(self, id=f"{general_config['repository_name']}-cfn-nag", general_config=general_config)
 
 
 class CICDPipelineStack(cdk.Stack):

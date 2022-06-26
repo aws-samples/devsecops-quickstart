@@ -85,16 +85,16 @@ class CfnNag(cdk.Stack):
         )
 
         layer = lambda_.LayerVersion(
-            self, 
+            self,
             "cfn-nag-layer",
             code=lambda_.Code.from_asset("devsecops_quickstart/cfn_nag/layer.zip"),
             # code=lambda_.Code.from_asset("devsecops_quickstart/cfn_nag/cfn-nag-pipeline/layer"),
             compatible_runtimes=[lambda_.Runtime.RUBY_2_7],
-            description="Ruby gems required for cfn-nag lambda handler"
+            description="Ruby gems required for cfn-nag lambda handler",
         )
 
         # layer = lambda_.LayerVersion(
-        #     self, 
+        #     self,
         #     "cfn-nag-layer",
         #     code=lambda_.Code.from_asset(
         #         path="devsecops_quickstart/cfn_nag/cfn-nag-pipeline",
