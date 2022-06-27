@@ -14,8 +14,8 @@ class OPAScanStack(cdk.Stack):
 
         lambda_role = iam.Role(
             self,
-            "opa-scan-lambda-role",
-            role_name="opa-scan-lambda-role",
+            "opa-scan-role",
+            role_name="opa-scan-role",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
         )
         lambda_role.add_managed_policy(

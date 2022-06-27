@@ -251,7 +251,7 @@ class CICDPipelineStack(cdk.Stack):
             iam.Role.from_role_arn(
                 self,
                 "opa-scan-role",
-                role_arn=f"arn:aws:iam::{general_config['toolchain_account']}:role/opa-scan-lambda-role",
+                role_arn=f"arn:aws:iam::{general_config['toolchain_account']}:role/opa-scan-role",
             )
         )
         artifact_bucket.grant_read(
