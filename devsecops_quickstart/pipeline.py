@@ -273,7 +273,15 @@ class CICDPipelineStack(cdk.Stack):
                 ),
             )
 
-        cdk.CfnOutput(self, "pipeline-artifact-bucket", value=pipeline.code_pipeline.artifact_bucket.bucket_name)
+        artifact_bucket = pipeline.code_pipeline.artifact_bucket
+        artifact_bucket.grant_read(
+            iam.Role.from_role_arn(self, "opa-scan-role", role_arn=f"arn:aws:iam::{general_config['toolchain_account']}:role/opa-scan-lambda-role")
+        )
+        artifact_bucket.grant_read(
+            iam.Role.from_role_arn(self, "cfn-nag-role", role_arn=f"arn:aws:iam::{general_config['toolchain_account']}:role/cfn-nag-role")
+        )
+        cdk.CfnOutput(self, "pipeline-artifact-bucket", value=artifact_bucket.bucket_name)
+        
         pipeline.code_pipeline.artifact_bucket.encryption_key.node.default_child.cfn_options.metadata = {
             "cfn_nag": {
                 "rules_to_suppress": [
