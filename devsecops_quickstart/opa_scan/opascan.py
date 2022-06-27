@@ -12,12 +12,12 @@ class OPAScanStack(cdk.Stack):
 
         super().__init__(scope, id="OPAScan", **kwargs)
 
-        lambda_role = iam.Role(
+        lambda_role = iam.Role.from_role_arn(
             self,
             "opa-scan-role",
-            role_name="opa-scan-role",
-            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            role_arn=f"arn:aws:iam::{general_config['toolchain_account']}:role/opa-scan-role",
         )
+
         lambda_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
                 self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"

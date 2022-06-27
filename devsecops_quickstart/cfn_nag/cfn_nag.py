@@ -11,9 +11,10 @@ class CfnNagStack(cdk.Stack):
 
         super().__init__(scope, id="CfnNag", **kwargs)
 
-        lambda_role = iam.Role(
-            self, "cfn-nag-role", role_name="cfn-nag-role", assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+        lambda_role = iam.Role.from_role_arn(
+            self, "cfn-nag-role", role_arn=f"arn:aws:iam::{general_config['toolchain_account']}:role/cfn-nag-role"
         )
+
         lambda_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
                 self, "lambda-service-basic-role", "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"

@@ -37,19 +37,22 @@ class CICDPipelineStack(cdk.Stack):
         id: str,
         general_config: dict,
         stages_config: dict,
-        is_development_pipeline: bool,
         **kwargs,
     ) -> None:
         super().__init__(scope, id, stack_name=id, **kwargs)
 
-        if is_development_pipeline:
-            repository = codecommit.Repository(self, "Repository", repository_name=general_config["repository_name"])
-        else:
-            repository = codecommit.Repository.from_repository_name(
-                self,
-                id="Repository",
-                repository_name=general_config["repository_name"],
-            )
+        cfn_nag_role = iam.Role(
+            self, "cfn-nag-role", role_name="cfn-nag-role", assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+        )
+
+        opa_scan_role = iam.Role(
+            self,
+            "opa-scan-role",
+            role_name="opa-scan-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+        )
+
+        repository = codecommit.Repository(self, "Repository", repository_name=general_config["repository_name"])
 
         cdk.CfnOutput(self, "repository-url", value=repository.repository_clone_url_http)
 
@@ -61,9 +64,7 @@ class CICDPipelineStack(cdk.Stack):
 
         source_action = codepipeline_actions.CodeCommitSourceAction(
             repository=repository,
-            branch=general_config["development_branch"]
-            if is_development_pipeline
-            else general_config["production_branch"],
+            branch=general_config["repository_branch"],
             output=source_artifact,
             action_name="Source",
         )
@@ -113,13 +114,27 @@ class CICDPipelineStack(cdk.Stack):
             synth_action=synth_action,
         )
 
+        pipeline_artifact_bucket = pipeline.code_pipeline.artifact_bucket
+        pipeline_artifact_bucket.grant_read(cfn_nag_role)
+        pipeline_artifact_bucket.grant_read(opa_scan_role)
+        cdk.CfnOutput(self, "pipeline-artifact-bucket", value=pipeline_artifact_bucket.bucket_name)
+
+        cdk.Tags.of(pipeline_artifact_bucket).add("resource-owner", "pipeline")
+
+        # FIXME
+        pipeline_artifact_bucket.encryption_key.node.default_child.cfn_options.metadata = {
+            "cfn_nag": {
+                "rules_to_suppress": [
+                    {"id": "F19", "reason": "CDK Generated Resource for Pipeline Artifacts"},
+                ]
+            }
+        }
+
         # git_submodules is currently not supported for CODEPIPELINE type
         # synth_action.project.node.default_child.source = codebuild.CfnProject.SourceProperty(
         #     type="CODEPIPELINE",
         #     git_submodules_config=codebuild.CfnProject.GitSubmodulesConfigProperty(fetch_submodules=True),
         # )
-
-        cdk.Tags.of(pipeline.code_pipeline.artifact_bucket).add("resource-owner", "pipeline")
 
         bandit_project = codebuild.PipelineProject(
             self,
@@ -184,17 +199,16 @@ class CICDPipelineStack(cdk.Stack):
             ),
         )
 
-        if is_development_pipeline:
-            pipeline.add_application_stage(
-                app_stage=ToolingStage(
-                    self,
-                    general_config=general_config,
-                    env=cdk.Environment(
-                        account=general_config["toolchain_account"],
-                        region=general_config["toolchain_region"],
-                    ),
-                ),
-            )
+        pipeline.add_application_stage(
+            app_stage=ToolingStage(
+                self,
+                general_config=general_config,
+                # env=cdk.Environment(
+                #     account=general_config["toolchain_account"],
+                #     region=general_config["toolchain_region"],
+                # ),
+            ),
+        )
 
         validate_stage = pipeline.add_stage("validate")
         validate_stage.add_actions(
@@ -245,26 +259,3 @@ class CICDPipelineStack(cdk.Stack):
                     ),
                 ),
             )
-
-        artifact_bucket = pipeline.code_pipeline.artifact_bucket
-        artifact_bucket.grant_read(
-            iam.Role.from_role_arn(
-                self,
-                "opa-scan-role",
-                role_arn=f"arn:aws:iam::{general_config['toolchain_account']}:role/opa-scan-role",
-            )
-        )
-        artifact_bucket.grant_read(
-            iam.Role.from_role_arn(
-                self, "cfn-nag-role", role_arn=f"arn:aws:iam::{general_config['toolchain_account']}:role/cfn-nag-role"
-            )
-        )
-        cdk.CfnOutput(self, "pipeline-artifact-bucket", value=artifact_bucket.bucket_name)
-
-        pipeline.code_pipeline.artifact_bucket.encryption_key.node.default_child.cfn_options.metadata = {
-            "cfn_nag": {
-                "rules_to_suppress": [
-                    {"id": "F19", "reason": "CDK Generated Resource for Pipeline Artifacts"},
-                ]
-            }
-        }

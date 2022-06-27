@@ -17,8 +17,7 @@
     "config": {
       "general": {
         "repository_name": "devsecops-quickstart",
-        "development_branch": "development",
-        "production_branch": "master",
+        "repository_branch": "main",
         "toolchain_account": "911685872277",
         "toolchain_region": "eu-central-1",
         "secret_name": {
