@@ -184,33 +184,6 @@ class CICDPipelineStack(cdk.Stack):
             ),
         )
 
-        pipeline.code_pipeline.artifact_bucket.add_to_resource_policy(
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                actions=["s3:List*", "s3:GetObject*", "s3:GetBucket*"],
-                resources=[
-                    pipeline.code_pipeline.artifact_bucket.bucket_arn,
-                    f"{pipeline.code_pipeline.artifact_bucket.bucket_arn}/*",
-                ],
-                principals=[
-                    iam.ArnPrincipal(f"arn:aws:iam::{self.account}:role/opa-scan-lambda-role"),
-                    iam.ArnPrincipal(f"arn:aws:iam::{self.account}:role/cfn-nag-role"),
-                ],
-            )
-        )
-
-        pipeline.code_pipeline.artifact_bucket.encryption_key.add_to_resource_policy(
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                actions=["kms:Decrypt", "kms:DescribeKey"],
-                resources=["*"],
-                principals=[
-                    iam.ArnPrincipal(f"arn:aws:iam::{self.account}:role/opa-scan-lambda-role"),
-                    iam.ArnPrincipal(f"arn:aws:iam::{self.account}:role/cfn-nag-role"),
-                ],
-            )
-        )
-
         if is_development_pipeline:
             pipeline.add_application_stage(
                 app_stage=ToolingStage(
