@@ -161,7 +161,9 @@ Cloud9 environment, go to CloudFormation service, open `tooling-cloud9` stack, a
 
 ![validate](./assets/cloud9_outputs.png)
 
-Copy the `IDEURL` link and open it in a new __incognito__ browser tab. For Sign In select IAM User. Use `IDEAccount` value from stack outputs for the account number and `AdminUserName` value for IAM user name. The Password needs to be retrieved from AWS Secret Manager by following the link in `AdminPasswordSecretURL` and selecting Retrieve Secret Value under Secret Value section.
+Copy the `IDEURL` link and open it in a new __incognito__ browser tab. For Sign In select IAM User. For Account number use the `IDEAccount` value from stack outputs, and for IAM user use `AdminUserName`. The Password needs to be retrieved from AWS Secret Manager by following the link in `AdminPasswordSecretURL` and selecting Retrieve Secret Value under Secret Value section. After successful login, you get access to the Cloud9 environment.
+
+![validate](./assets/cloud9_env.png)
 
 ### 3. CodePipeline
 Navigate to AWS CodePipeline service, select Pipeline/Pipelines from the left navigation bar, and verify that a new pipeline has been created. 
