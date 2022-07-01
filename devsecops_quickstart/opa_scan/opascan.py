@@ -88,14 +88,20 @@ class OPAScanStack(cdk.Stack):
             )
         )
 
+        lambda_.Fun
+
         lambda_go.GoFunction(
             self,
             "opa-scan",
             function_name="opa-scan",
             entry="devsecops_quickstart/opa_scan/lambda",
+            module_dir="devsecops_quickstart/opa_scan",
             role=lambda_role,
             environment={"RUN_ON_LAMBDA": "True"},
             timeout=cdk.Duration.minutes(2),
             memory_size=256,
             runtime=lambda_.Runtime.GO_1_X,
         )
+
+
+
