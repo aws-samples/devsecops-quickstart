@@ -20,16 +20,12 @@ phases:
       - which go
       - echo $GOPATH
       - npm install -g aws-cdk
+      - cdk acknowledge 19836
       - python3 -m venv .venv
       - . .venv/bin/activate
       - pip install -r requirements.txt
       - git submodule update --init --recursive
-      # - git init
-      # - cd devsecops_quickstart/cfn_nag
-      # - git submodule add https://github.com/stelligent/cfn-nag-pipeline.git
-      # - ls cfn-nag-pipeline
-      # - cd -
   build:
     commands:
-      - cdk deploy
+      - cdk deploy devsecops-quickstart-cicd
 
