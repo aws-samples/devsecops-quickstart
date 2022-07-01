@@ -8,7 +8,7 @@
     },
     "environment": {
         "type": "LINUX_CONTAINER",
-        "image": "aws/codebuild/standard:5.0",
+        "image": "aws/codebuild/standard:6.0",
         "computeType": "BUILD_GENERAL1_SMALL",
         "privilegedMode": true
     },

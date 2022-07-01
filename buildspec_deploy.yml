@@ -10,7 +10,7 @@ phases:
   install:
     on-failure: ABORT
     runtime-versions:
-      python: 3.9
+      python: 3.10
       golang: 1.16
       nodejs: 16
     commands:
