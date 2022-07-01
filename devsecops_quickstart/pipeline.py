@@ -52,7 +52,13 @@ class CICDPipelineStack(cdk.Stack):
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
         )
 
-        repository = codecommit.Repository(self, "Repository", repository_name=general_config["repository_name"])
+        # repository = codecommit.Repository(self, "Repository", repository_name=general_config["repository_name"])
+
+        repository = codecommit.Repository.from_repository_name(
+            self,
+            id="Repository",
+            repository_name=general_config["repository_name"],
+        )
 
         cdk.CfnOutput(self, "repository-url", value=repository.repository_clone_url_http)
 

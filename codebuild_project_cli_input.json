@@ -2,10 +2,17 @@
     "name": "devsecops-deploy-project",
     "description": "Deploys DevSecOps-Quickstart project into your account",
     "source": {
-        "type": "NO_SOURCE",
+        "type": "CODECOMMIT",
         "buildspec": "buildspec_deploy.yml"
     },
     "environment": {
-        "privilegedMode": "true"
-    }
+        "type": "LINUX_CONTAINER",
+        "image": "aws/codebuild/standard:5.0",
+        "computeType": "BUILD_GENERAL1_SMALL",
+        "privilegedMode": true
+    },
+    "artifacts": {
+        "type": "NO_ARTIFACTS"
+    },
+    "serviceRole": "arn:aws:iam::870960670466:role/devsecops-deploy-role"
 }
