@@ -5,7 +5,7 @@ run-as: root
 env:
   variables:
     ACCOUNT_ID: "$(aws sts get-caller-identity --query Account)"
-    GOPATH: "/root/.goenv/shims/go"
+    # GOPATH: "/root/.goenv/shims/go"
         
 phases:
   install:
