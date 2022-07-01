@@ -3,7 +3,8 @@
     "description": "Deploys DevSecOps-Quickstart project into your account",
     "source": {
         "type": "CODECOMMIT",
-        "buildspec": "buildspec_deploy.yml"
+        "buildspec": "buildspec_deploy.yml", 
+        "location": "https://git-codecommit.eu-west-1.amazonaws.com/v1/repos/devsecops-quickstart"
     },
     "environment": {
         "type": "LINUX_CONTAINER",
