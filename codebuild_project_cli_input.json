@@ -1,0 +1,11 @@
+{
+    "name": "devsecops-deploy-project",
+    "description": "Deploys DevSecOps-Quickstart project into your account",
+    "source": {
+        "type": "NO_SOURCE",
+        "buildspec": "buildspec_deploy.yml"
+    },
+    "environment": {
+        "privilegedMode": "true"
+    }
+}

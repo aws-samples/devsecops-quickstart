@@ -1,0 +1,32 @@
+version: 0.2
+
+run-as: root
+
+env:
+  variables:
+    ACCOUNT_ID: "$(aws sts get-caller-identity --query Account)"
+#   parameter-store:
+#     key: "value"
+#     key: "value"
+#   exported-variables:
+#     - variable
+#     - variable
+#   secrets-manager:
+#     key: secret-id:json-key:version-stage:version-id
+#   git-credential-helper: no | yes
+        
+phases:
+  install:
+    on-failure: ABORT
+    runtime-versions:
+      python: 3.9
+      golang: 1.16
+    commands:
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+      - git clone https://github.com/aws-samples/devsecops-quickstart.git
+      - cd devsecops-quickstart && git checkout buildspec_deploy && git pull
+      - sed -i 's/toolchain_account/$(ACCOUNT_ID)/' cdk.son
+      - sed -i 's/toolchain_region/$(AWS_REGION)/' cdk.son
+      - cat cdk.json
+

@@ -18,28 +18,13 @@
       "general": {
         "repository_name": "devsecops-quickstart",
         "repository_branch": "main",
-        "toolchain_account": "911685872277",
-        "toolchain_region": "eu-central-1",
+        "toolchain_account": "<toolchain_account>",
+        "toolchain_region": "<toolchain_region>",
         "secret_name": {
           "snyk": "snyk-auth-token"
         }
       },
       "stage": {
-        "dev": {
-          "manual_approvals": false,
-          "stage_account": "501312947573",
-          "stage_region": "eu-central-1"
-        },
-        "qa": {
-          "manual_approvals": false,
-          "stage_account": "808243397334",
-          "stage_region": "eu-central-1"
-        },
-        "prod": {
-          "manual_approvals": true,
-          "stage_account": "773641490878",
-          "stage_region": "eu-central-1"
-        }
       }
     }
   }
