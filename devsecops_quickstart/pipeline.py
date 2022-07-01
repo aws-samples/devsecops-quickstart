@@ -208,11 +208,7 @@ class CICDPipelineStack(cdk.Stack):
         pipeline.add_application_stage(
             app_stage=ToolingStage(
                 self,
-                general_config=general_config,
-                # env=cdk.Environment(
-                #     account=general_config["toolchain_account"],
-                #     region=general_config["toolchain_region"],
-                # ),
+                general_config=general_config
             ),
         )
 

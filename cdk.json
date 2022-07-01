@@ -27,18 +27,18 @@
       "stage": {
         "dev": {
           "manual_approvals": false,
-          "stage_account": "870960670466",
-          "stage_region": "eu-central-1"
+          "stage_account": "501312947573",
+          "stage_region": "eu-west-1"
         },
         "qa": {
           "manual_approvals": false,
-          "stage_account": "870960670466",
-          "stage_region": "eu-central-1"
+          "stage_account": "501312947573",
+          "stage_region": "eu-west-1"
         },
         "prod": {
           "manual_approvals": true,
-          "stage_account": "870960670466",
-          "stage_region": "eu-central-1"
+          "stage_account": "501312947573",
+          "stage_region": "eu-west-1"
         }
       }
     }
