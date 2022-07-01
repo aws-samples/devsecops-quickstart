@@ -11,7 +11,7 @@ phases:
     on-failure: ABORT
     runtime-versions:
       python: 3.10
-      golang: 1.16
+      golang: 1.18
       nodejs: 16
     commands:
       - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
