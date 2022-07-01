@@ -15,14 +15,19 @@ phases:
       golang: 1.18
       nodejs: 16
     commands:
-      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
-      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+      # - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
+      # - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
       - which go
       - echo $GOPATH
       - npm install -g aws-cdk
       - python3 -m venv .venv
       - . .venv/bin/activate
       - pip install -r requirements.txt
+      - git init
+      - cd devsecops_quickstart/cfn_nag
+      - git submodule add https://github.com/stelligent/cfn-nag-pipeline.git
+      - ls cfn-nag-pipeline
+      - cd -
   build:
     commands:
       - cdk deploy
