@@ -99,6 +99,3 @@ class OPAScanStack(cdk.Stack):
             memory_size=256,
             runtime=lambda_.Runtime.GO_1_X,
         )
-
-
-

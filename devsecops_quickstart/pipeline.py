@@ -206,10 +206,7 @@ class CICDPipelineStack(cdk.Stack):
         )
 
         pipeline.add_application_stage(
-            app_stage=ToolingStage(
-                self,
-                general_config=general_config
-            ),
+            app_stage=ToolingStage(self, general_config=general_config),
         )
 
         validate_stage = pipeline.add_stage("validate")
