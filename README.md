@@ -1,4 +1,3 @@
-
 # DevSecOps Quick Start
 
 This artefact helps development teams to quickly set up a ready to use environment integrated with a
@@ -16,29 +15,49 @@ Upon successful deployment, you will have:
 - pipeline integration with [CFN NAG](https://github.com/stelligent/cfn_nag) to look for patterns in 
   CloudFormation templates that may indicate insecure infrastructure
 - pipeline integration with [Open Policy Agent (OPA)](https://www.openpolicyagent.org/) that enables you define and
-  enforce policies on infrastructure resources at development time   
+  enforce policies on infrastructure resources at development time
 
-## Clone the Repository
-This repository contains `Git Submodules`. If cloning for the first time, make sure to use
-`--recurse-submodules` flag to automatically initialize and update each submodule in the repository:
+## Prerequisites
+- An [AWS Account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) to be used as `Toolchain` account
+- One or more [AWS Account(s)](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) to be used as deployment target accounts (e.g. `Dev`,`QA`,`Prod`, etc.)
+
+> **_NOTE:_**  Separating toolchain and deployment target accounts is technically not required, but is considered as best practice. We encourage you to start with a toolchain and a development account. You can easilty add new target environments to the pipeline in the future, if and when needed. 
+
+- [AWS CLI](https://aws.amazon.com/cli/)
+- [Install AWS CDK Toolkit v2](https://docs.aws.amazon.com/cdk/v2/guide/cli.html)
+- [Install Python v3.7 or higher](https://www.python.org/downloads/)
+- [Install Docker](https://docs.docker.com/get-docker/)
+
+## Set UP the Project
+
+### 1. Clone GitHub repository
+This project's code repository contains `Git Submodules`. If cloning for the first time, make sure to use
+`--recurse-submodules` flag to automatically initialize and update submodules:
 
 ```
 git clone --recurse-submodules https://github.com/aws-samples/devsecops-quickstart.git
 ```
 
-If you have cloned the previous version of the repository before the addition of submodules,
-you can initialize and update the submodules using the following command:
+If the repository is already cloned without the `--recurse-submodules` flag,
+initialize and update submodules by running the following command:
 
 ```
 git submodule update --init --recursive
 ``` 
 
-For more information on working with repositories with `Git Submodules`, please refere to 
-[here](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
+For more information on working with Git repositories with submodules, refere to 
+[Git-Tools-Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) documentation.
 
-## Set Up
+### 2. Configure accounts and regions
+Locate `cdk.json` file on project's root folder. This is the project's configuration file. 
+Update `cdk.json` with account number and region values to be used for toolchain, and deployment target accounts. 
+The default setting has three deployment target accounts for Dev, QA, and Prod. This is just for demonstration purposes. 
+Feel free to add/remove deployment targets according to your requirements. You can for example start with a
+single development account and keep adding more stages in the future as requierd.
 
-### 1. Create Python environment
+> **_NOTE:_** Make sure to commit your changes. 
+
+### 3. Set up Python environment
 This project is set up like a standard Python project.  The initialization
 process also creates a virtualenv within this project, stored under the `.venv`
 directory.  To create the virtualenv it assumes that there is a `python3`
@@ -71,87 +90,117 @@ Once the virtualenv is activated, you can install the required dependencies.
 pip install -r requirements.txt
 ```
 
-### 2. Configure accounts and regions
-Update `cdk.json` with account number and region values to be used for toolchain, and deployment accounts. The current
-setting has three deployment accounts for Dev, QA, and Prod, just as an example. You can add/remove deployment stages
-in `cdk.json` config to adjust the pipeline according to your needs. 
 
-### 3. Configure Snyk authentication token
+## Bootstrap Account(s)
+This is a one-time setup known as [Bootstrapping](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html), 
+which you need to do for the toolchain and each deployment target account separately. 
+
+Do the following steps for toolchain account+region, that you configured in `cdk.json` in 
+step **2. Configure accounts and regions**:
+
+### 4. [Configure AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to point to the account and region
+
+> **_NOTE:_** This can be quickly done as described in [Quick configuration with aws configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) section. Alternatively, you can use 
+[AWS CLI Profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-profiles), which is more convenient when switching back and forth between multiple accounts.
+
+> **_NOTE:_** If you are using AWS CLI profiles, make sure to provide the `--prfoile <profile_name>` option for every command interacting with AWS accounts below. 
+
+### 5. Run CDK Bootstrap
+
+> **_NOTE:_** Make sure to replace `toolchain_account` and `toolchain_region` placeholders.
+
+```
+cdk bootstrap \
+  --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+  aws://<toolchain_account>/<toolchain_region>
+```
+
+Repeat the following steps for each deployment target account+region that you configured in `cdk.json` in 
+step **2. Configure accounts and regions**:
+
+### 6. [Configure AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to point to the account and rgion
+
+### 7. Run CDK Bootstrap
+
+> **_NOTE:_** Make sure to replace `<toolchain_account>`, `<deployment_target_account>`, and `<deployment_target_region>` placeholders. 
+
+```
+cdk bootstrap \
+  --trust <toolchain_account> \
+  --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+  aws://<deployment_target_account>/<deployment_target_region>
+```
+
+## Configure Snyk authentication token in toolchain account
+
 For Snyk integration, you need to provide authentication token with a Snyk profile account. You can sign up for a
 free Snyk account [here](https://app.snyk.io/login?cta=sign-up&loc=body&page=try-snyk). After sign up, you can get
 your Auth Token from the Account Settings section in your profile.
 
-Using the retrieved authentication token, use secret helper tool to securely store the authentication token 
-in AWS Secret Manager in the toolchain account to share it with the deployment pipeline:
-```
-./create_secret_helper.sh snyk-auth-token <snyk-auth-token-value>
-```
+With the Snyk authentication token retrieved, use `create_secret_helper` utility to securely store 
+the token in AWS Secret Manager in toolchain account. 
+It will be automatically used by the pipeline to interact with Snyk during the pipeline execution.
 
-## Deploy
-### 1. Bootstrap accounts
+### 8. [Configure AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to point to the account and rgion
 
-The toolchain account will host all the required tools deployed by this quick start. The Dev/QA/Prod accounts will 
-be used as target accounts for deployment of your application(s).
-
-Bootstrap the toolchain account. You only need to do this one time per environment where you want 
-to deploy CDK applications.
-
-Make sure you have credentials for the toolchain account in a profile named `toolchain-profile`.
+> **_TODO:_** Pass profile to CLI commands
 
 ```
-cdk bootstrap \
-  --profile toolchain-profile \
-  --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-  aws://<toolchain-account>/<toolchain-region>
+./create_secret_helper.sh snyk-auth-token <snyk-auth-token-value> <toolchain_profile_name>
 ```
 
-Bootstrap the target accounts. You only need to do this one time per environment where you want
-to deploy CDK applications.
+## Seed project's code to toolchain account
 
-Make sure you have credentials for the development account in a profile named `dev-profile`.
+### 9. [Configure AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to point to the account and region 
 
-```
-cdk bootstrap \
-  --profile dev-profile \
-  --trust <toolchain-account> \
-  --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-  aws://<dev-account>/<dev-region>
-```
+### 10. Create CodeCommit repository
 
-Repeat this step for QA and Prod accounts. 
-
-### 2. Deploy CI/CD pipeline
-Run the following command to deploy the development CI/CD pipeline. The pipeline will track changes from `main` branch as configured in 
-`repository_branch` property in `cdk.json`.
+Create a new Git repository in the toolchain account. This will become the main repository used by the pipeline
+for deployments, where you will be developing your application.
 
 ```
-cdk deploy devsecops-quickstart-cicd --profile toolchain-profile
+aws codecommit create-repository --repository-name devsecops-quickstart
 ```
 
-Take note of the `devsecops-quickstart-cicd.repositoryurl` value in deployment outputs. 
+Take note of `cloneUrlHttp` value in the command output.
 
-### 3. Initialize the repository
-The Git repository created and attached to the pipeline in previous step is empty. 
-To start using the repository, you need to first seed it with the current project code. 
-Use the repository URL from previous step.
+### 11. Set up HTTPS connection to AWS CodeCommit repositories 
+on [Linux, macOS, or Unix](https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-https-unixes.html) 
+or [Windows](https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-https-windows.html) 
+with the AWS CLI credential helper
+
+### 12. Seed CodeCommit repository
+
+> **_NOTE:_** Make sure to replace `<codecommit_repository_url>` placeholder with `cloneUrlHttp` value 
+from step **9. Create Git repository**.
 
 ```
-git remote add origin <devsecops-quickstart-cicd.repositoryurl>
+git remote add origin <codecommit_repository_url>
 git checkout -b main
 git add .
 git commit -m "initial commit"
 git push --set-upstream origin main
 ```
 
-## Verify toolchain account
+## Deploy CI/CD pipeline in toolchain account
+
+### 13. [Configure AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to point to the account and region
+### 14. Deploy
+Run CDK deploy command to build and deploy the CI/CD pipeline.
+
+```
+cdk deploy devsecops-quickstart-cicd
+```
+
+## Verify Deployment in Toolchain Account
 Login to the toolchain account in AWS Console. Select the same region you used for the deployment.
-### 1. CodeCommit Repository
+### AWS CodeCommit Repository
 
 Navigate to AWS CodeCommit service, select Source/Repositories from the left navigation bar, and verify that a new repository has been created.
 
 ![validate](./assets/repository.png)
 
-### 2. Cloud9 Environment
+### AWS Cloud9 Environment
 Navigate to AWS Cloud9 service, select Account Environments from the left navigation bar, and verify that a new Cloud9 environment has been created.
 
 ![cloud9](./assets/cloud9.png)
@@ -165,7 +214,7 @@ Copy the `IDEURL` link and open it in a new __incognito__ browser tab. For Sign 
 
 ![validate](./assets/cloud9_env.png)
 
-### 3. CodePipeline
+### AWS CodePipeline pipeline
 Navigate to AWS CodePipeline service, select Pipeline/Pipelines from the left navigation bar, and verify that a new pipeline has been created. 
 
 ![validate](./assets/pipeline.png)
@@ -182,7 +231,7 @@ If you have enabled manual approvals in the stage configuration in `cdk.json`, t
 
 ![prod](./assets/prod.png)
 
-## Verify target account(s)
+## Verify Deployment in Deployment Target Account(s)
 For each target account, login to the account in AWS Console. Make sure you are in the same region as you used for the deployment. Navigate to CloudFormation service and search for the application stack that is deployed by the pipeline. This pipeline comes with a sample application called `SampleApp` which is deployed for demonstration purposes. You can add your application stacks following the same approach and the pipeline will take care of deploying them into your target environments.
 
 ![prod](./assets/sample_app.png)
