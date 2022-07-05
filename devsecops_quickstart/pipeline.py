@@ -52,7 +52,13 @@ class CICDPipelineStack(cdk.Stack):
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
         )
 
-        repository = codecommit.Repository(self, "Repository", repository_name=general_config["repository_name"])
+        # repository = codecommit.Repository(self, "Repository", repository_name=general_config["repository_name"])
+
+        repository = codecommit.Repository.from_repository_name(
+            self,
+            id="Repository",
+            repository_name=general_config["repository_name"],
+        )
 
         cdk.CfnOutput(self, "repository-url", value=repository.repository_clone_url_http)
 
@@ -200,14 +206,7 @@ class CICDPipelineStack(cdk.Stack):
         )
 
         pipeline.add_application_stage(
-            app_stage=ToolingStage(
-                self,
-                general_config=general_config,
-                # env=cdk.Environment(
-                #     account=general_config["toolchain_account"],
-                #     region=general_config["toolchain_region"],
-                # ),
-            ),
+            app_stage=ToolingStage(self, general_config=general_config),
         )
 
         validate_stage = pipeline.add_stage("validate")

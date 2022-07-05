@@ -92,7 +92,7 @@ class OPAScanStack(cdk.Stack):
             self,
             "opa-scan",
             function_name="opa-scan",
-            entry="devsecops_quickstart/opa_scan/lambda",
+            entry="devsecops_quickstart/opa_scan/lambda/main.go",
             role=lambda_role,
             environment={"RUN_ON_LAMBDA": "True"},
             timeout=cdk.Duration.minutes(2),
