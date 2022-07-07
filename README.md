@@ -27,6 +27,7 @@ Upon successful deployment, you will have:
 - [Install AWS CDK Toolkit v2](https://docs.aws.amazon.com/cdk/v2/guide/cli.html)
 - [Install Python v3.7 or higher](https://www.python.org/downloads/)
 - [Install Docker](https://docs.docker.com/get-docker/)
+- [Install Go](https://go.dev/doc/install)
 
 ## Set UP the Project
 
@@ -103,7 +104,7 @@ step **2. Configure accounts and regions**:
 > **_NOTE:_** This can be quickly done as described in [Quick configuration with aws configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config) section. Alternatively, you can use 
 [AWS CLI Profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-profiles), which is more convenient when switching back and forth between multiple accounts.
 
-> **_NOTE:_** If you are using AWS CLI profiles, make sure to provide the `--prfoile <profile_name>` option for every command interacting with AWS accounts below. 
+> **_NOTE:_** If you are using AWS CLI profiles, make sure to provide the `--profile <profile_name>` option for every command interacting with AWS accounts below. 
 
 ### 5. Run CDK Bootstrap
 
@@ -164,10 +165,13 @@ aws codecommit create-repository --repository-name devsecops-quickstart
 
 Take note of `cloneUrlHttp` value in the command output.
 
-### 11. Set up HTTPS connection to AWS CodeCommit repositories 
-on [Linux, macOS, or Unix](https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-https-unixes.html) 
-or [Windows](https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-https-windows.html) 
-with the AWS CLI credential helper
+### 11. Setup Git Credential Helper for AWS CodeCommit
+
+If this is the first time you are using AWS CodeCommit, you need to configure a Git Credential Helper 
+to be able to access CodeCommit repositories using HTTPS. Follow AWS CodeCommit
+documentation to set up a credential helper on 
+[Linux, macOS, or Unix](https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-https-unixes.html#setting-up-https-unixes-credential-helper) or 
+[Windows](https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-https-windows.html#setting-up-https-windows-credential-helper).
 
 ### 12. Seed CodeCommit repository
 
@@ -175,11 +179,11 @@ with the AWS CLI credential helper
 from step **9. Create Git repository**.
 
 ```
-git remote add origin <codecommit_repository_url>
+git remote add codecommit <codecommit_repository_url>
 git checkout -b main
 git add .
 git commit -m "initial commit"
-git push --set-upstream origin main
+git push --set-upstream codecommit main
 ```
 
 ## Deploy CI/CD pipeline in toolchain account
