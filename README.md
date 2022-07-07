@@ -240,10 +240,27 @@ For each target account, login to the account in AWS Console. Make sure you are 
 
 ![prod](./assets/sample_app.png)
 
-## Troubleshooting
-#### Q: How to access the Cloud9 Environment?
+
+## What Now?
+
+The pipeline you just created is deploying a dummy application stack called `SampleApp`. The stack is defined in 
+`devsecops_quickstart/sample_app/sample_app.py` and is integrated into the pipeline definition in 
+`devsecops_quickstart/pipeline.py`. 
+
+It is now your turn to roll up the sleeves and develop your application stack(s). Follow the same approach as in
+the `SampleApp` to define you application stage and integrate it into the pipeline. 
+
+Have fun!
+## FAQ
+### Q: How to access the Cloud9 Environment?
 A: Check the CloudFormation Outputs section of the stack called `tooling-Cloud9`. There you can find output parameters
 for the environment URL, admin user, and the AWS Secret Manager secret containing the admin password.
+
+### Q: How to add a new deployment target to the pipeline?
+A: Deployment targets are configured in `cdk.json` file under `context.config.stage` variable. You can add as many stages 
+to the pipeline as required, both now or in the future. Simply give your new stage a name and provide values for account, region, and wheather 
+manual approval is required. Then commit and push the changes to trigger the pipeline. The pipeline is capable of mutating 
+itself to dynamically adjust to your configuration.
 
 ## Security
 
