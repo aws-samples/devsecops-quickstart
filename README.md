@@ -61,19 +61,17 @@ single development account and keep adding more stages in the future as requierd
 ### 3. Set up Python environment
 This project is set up like a standard Python project.  The initialization
 process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+directory. 
 
-To manually create a virtualenv on MacOS and Linux:
+Use the following command to create a virtualenv on the project's root folder:
+
+> **_NOTE:_** Use `python` instead of `python3` on Windows.
 
 ```
 python3 -m venv .venv
 ```
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
+After the virtualenv is created, use the following step to activate your virtualenv.
 
 ```
 source .venv/bin/activate
@@ -85,7 +83,7 @@ If you are a Windows platform, you would activate the virtualenv like this:
 .venv\Scripts\activate.bat
 ```
 
-Once the virtualenv is activated, you can install the required dependencies.
+Once the virtualenv is activated, install the required dependencies.
 
 ```
 pip install -r requirements.txt
@@ -137,6 +135,11 @@ cdk bootstrap \
 For Snyk integration, you need to provide authentication token with a Snyk profile account. You can sign up for a
 free Snyk account [here](https://app.snyk.io/login?cta=sign-up&loc=body&page=try-snyk). After sign up, you can get
 your Auth Token from the Account Settings section in your profile.
+
+> **_NOTE:_** When signing up for a new account on Snyk, the whizzard routes you to a final step to select a 
+Git repository and provide integration for Snyk to monitor that repository. This step is not mandatory for creating
+Snyk accounts and is not required for our setup, either. Simply skip that by choosing `Select from other repositories`
+which will bring you directly to your profile.
 
 With the Snyk authentication token retrieved, use `create_secret_helper` utility to securely store 
 the token in AWS Secret Manager in toolchain account. 
@@ -196,7 +199,7 @@ Run CDK deploy command to build and deploy the CI/CD pipeline.
 cdk deploy devsecops-quickstart-cicd
 ```
 
-## Verify Deployment in Toolchain Account
+## Verify deployment in toolchain account
 Login to the toolchain account in AWS Console. Select the same region you used for the deployment.
 ### AWS CodeCommit Repository
 
@@ -235,7 +238,7 @@ If you have enabled manual approvals in the stage configuration in `cdk.json`, t
 
 ![prod](./assets/prod.png)
 
-## Verify Deployment in Deployment Target Account(s)
+## Verify deployment in target account(s)
 For each target account, login to the account in AWS Console. Make sure you are in the same region as you used for the deployment. Navigate to CloudFormation service and search for the application stack that is deployed by the pipeline. This pipeline comes with a sample application called `SampleApp` which is deployed for demonstration purposes. You can add your application stacks following the same approach and the pipeline will take care of deploying them into your target environments.
 
 ![prod](./assets/sample_app.png)
